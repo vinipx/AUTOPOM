@@ -24,7 +24,8 @@ The project is designed for teams that need predictable POM generation, repeatab
 - Interactive element extraction and semantic page modeling.
 - Selector verification and fallback-based self-healing.
 - Multi-language Playwright POM generation (`java`, `javascript`, `typescript`).
-- Structured persistence (`JSON` models, language-specific code, crawl summary reports).
+- Live crawl progress logs (`[CRAWL]`, `[MAP]`, `[SKIP]`) for runtime visibility.
+- Structured persistence (`JSON` models, language-specific code, crawl + execution summary reports).
 - CI-ready quality gates with Ruff formatting and lint checks.
 
 ## Core Capabilities
@@ -46,6 +47,12 @@ The project is designed for teams that need predictable POM generation, repeatab
 - Validates generated selectors against runtime visibility checks.
 - Attempts fallback selectors automatically when primary selectors fail.
 - Adjusts confidence scores to support downstream quality decisions.
+
+### Operational Visibility and Reporting
+
+- Shows live crawl progress with page/depth/queue visibility while running.
+- Produces both technical and managerial reports at run completion.
+- Captures effective configuration, performance timing, and output metrics for traceability.
 
 ## Architecture at a Glance
 
@@ -78,11 +85,27 @@ PYTHONPATH=src python3 -m autopom.cli.main \
   --base-url "https://example.com" \
   --output-dir "output" \
   --pom-language "typescript" \
+  --browser-adapter "mock" \
   --max-depth 3 \
   --max-pages 20
 ```
 
 Supported values for `--pom-language`: `java`, `javascript`, `typescript`.
+Supported values for `--browser-adapter`: `mock`, `playwright`.
+
+## Interactive Run Wizard
+
+Use the guided runner for a user-friendly prompt flow:
+
+```bash
+bash run.sh
+```
+
+It asks for base URL, output folder, language, browser adapter (`mock` or `playwright`), and crawl limits, then automatically installs required Python packages and Playwright browser runtime when needed.
+
+Dependency setup is optimized: if packages and browser runtime are already up to date, the script skips reinstallation automatically.
+
+During execution, users get live logs for crawl and mapping activity, plus a final execution summary report.
 
 ## Configuration
 
@@ -101,6 +124,8 @@ The crawl engine is configured through `CrawlConfig` (`src/autopom/config.py`).
 | `auth_user_env` | `AUTOPOM_USERNAME` | Environment variable name for username. |
 | `auth_pass_env` | `AUTOPOM_PASSWORD` | Environment variable name for password. |
 | `pom_language` | `java` | POM output language (`java`, `javascript`, `typescript`). |
+| `browser_adapter` | `mock` | Browser runtime (`mock`, `playwright`). |
+| `playwright_headless` | `true` | Use headless browser when Playwright adapter is selected. |
 
 ## Output Structure
 
@@ -108,7 +133,17 @@ After a run, outputs are created under the selected output directory:
 
 - `models_json/` - JSON page models and metadata per discovered page.
 - `<language>/` - Generated Playwright page objects and base page class (`java/`, `javascript/`, or `typescript/`).
-- `reports/crawl_summary.md` - Crawl quality and coverage summary.
+- `reports/crawl_summary.md` - Crawl quality and selector confidence summary.
+- `reports/execution_summary.md` - Human-readable managerial summary (config + metrics + duration).
+- `reports/execution_summary.json` - Structured summary payload for dashboards/automation.
+
+## Runtime Visibility
+
+Execution now includes live progress indicators:
+
+- `[CRAWL]` - URL currently being visited, depth, queue, and modeled count.
+- `[MAP]` - page mapped with element/action counts.
+- `[SKIP]` - skipped URLs with reason (policy, duplicate, depth limit).
 
 ### Language-specific examples
 
@@ -121,6 +156,21 @@ PYTHONPATH=src python3 -m autopom.cli.main --base-url "https://example.com" --po
 
 # TypeScript
 PYTHONPATH=src python3 -m autopom.cli.main --base-url "https://example.com" --pom-language typescript
+```
+
+### Live crawl with Playwright
+
+```bash
+python -m pip install -e ".[browser]"
+python -m playwright install chromium
+
+PYTHONPATH=src python3 -m autopom.cli.main \
+  --base-url "https://vinipx.github.io/AUTOPOM/" \
+  --output-dir "output-live" \
+  --pom-language "typescript" \
+  --browser-adapter "playwright" \
+  --max-depth 2 \
+  --max-pages 20
 ```
 
 ## Enterprise Use Cases

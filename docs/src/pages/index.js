@@ -18,7 +18,7 @@ function HeroBanner() {
           <p className={styles.heroDescription}>
             AutoPOM-Agent self-navigates your application, maps resilient selectors,
             infers semantic element names, and synthesizes clean POM code (Java, JavaScript, or TypeScript) with
-            built-in selector verification.
+            built-in selector verification, live crawl progress, and execution summary reporting.
           </p>
           <div className={styles.heroButtons}>
             <Link className={styles.heroPrimary} to="/docs/getting-started/quickstart">
@@ -288,15 +288,14 @@ function QuickStartSection() {
         </div>
         <div className={styles.codeBlock}>
           <pre>
-            <code>{`# install docs dependencies
-cd docs
-npm install
+            <code>{`# guided enterprise runner (recommended)
+bash run.sh
 
-# start docs locally
-npm start
-
-# run AutoPOM locally (project root)
-PYTHONPATH=src python3 -m autopom.cli.main --base-url "https://example.com" --pom-language "typescript"`}</code>
+# or run directly
+PYTHONPATH=src python3 -m autopom.cli.main \\
+  --base-url "https://example.com" \\
+  --pom-language "typescript" \\
+  --browser-adapter "playwright"`}</code>
           </pre>
         </div>
       </div>

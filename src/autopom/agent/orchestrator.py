@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 from urllib.parse import urljoin, urlparse
 
 from autopom.agent.policies import is_denied_domain, normalize_url, same_origin
@@ -37,9 +38,15 @@ class CrawlResult:
 
 
 class AutoPomOrchestrator:
-    def __init__(self, config: CrawlConfig, browser: BrowserAdapter) -> None:
+    def __init__(
+        self,
+        config: CrawlConfig,
+        browser: BrowserAdapter,
+        progress_hook: Callable[[str, dict], None] | None = None,
+    ) -> None:
         self.config = config
         self.browser = browser
+        self.progress_hook = progress_hook
         self.state = CrawlState()
         self.state.enqueue(FrontierItem(config.base_url, 0))
 
@@ -65,9 +72,25 @@ class AutoPomOrchestrator:
             current = self.state.dequeue()
             if current is None:
                 break
+            self._emit_progress(
+                "dequeue",
+                {
+                    "url": current.url,
+                    "depth": current.depth,
+                    "frontier_remaining": len(self.state.frontier),
+                    "modeled_pages": len(pages),
+                },
+            )
             if current.depth > self.config.max_depth:
+                self._emit_progress(
+                    "skip",
+                    {"url": current.url, "reason": "depth_limit", "depth": current.depth},
+                )
                 continue
             if not self._is_allowed(current.url):
+                self._emit_progress(
+                    "skip", {"url": current.url, "reason": "policy_blocked"}
+                )
                 continue
 
             self.browser.goto(current.url)
@@ -79,6 +102,9 @@ class AutoPomOrchestrator:
             )
             if signature in self.state.visited_signatures:
                 self.state.duplicate_hits += 1
+                self._emit_progress(
+                    "skip", {"url": current.url, "reason": "duplicate_signature"}
+                )
                 continue
             self.state.visited_signatures.add(signature)
 
@@ -90,6 +116,19 @@ class AutoPomOrchestrator:
             pom_paths.append(self.pom_generator.generate_page(page_model))
 
             self.state.page_count += 1
+            element_count = sum(len(section.elements) for section in page_model.sections)
+            self._emit_progress(
+                "modeled",
+                {
+                    "url": page_model.url,
+                    "page_name": page_model.page_name,
+                    "modeled_pages": len(pages),
+                    "elements": element_count,
+                    "actions": len(page_model.actions),
+                    "models_saved": len(model_paths),
+                    "poms_generated": len(pom_paths),
+                },
+            )
             self._enqueue_links(dom_summary.get("links", []), current.depth + 1)
 
         report_path = self.reporter.write_summary(pages)
@@ -99,6 +138,11 @@ class AutoPomOrchestrator:
             pom_paths=pom_paths,
             report_path=report_path,
         )
+
+    def _emit_progress(self, event: str, payload: dict) -> None:
+        if self.progress_hook is None:
+            return
+        self.progress_hook(event, payload)
 
     def _build_page_model(self, dom_summary: dict) -> PageModel:
         url = self.browser.url()

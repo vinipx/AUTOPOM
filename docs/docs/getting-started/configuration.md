@@ -14,6 +14,8 @@ AutoPOM-Agent behavior is controlled by `CrawlConfig`.
 | `denied_domains` | External domains denylist | social domains |
 | `output_dir` | Output root for artifacts | `output` |
 | `pom_language` | Generated POM language (`java`, `javascript`, `typescript`) | `java` |
+| `browser_adapter` | Browser backend (`mock`, `playwright`) | `mock` |
+| `playwright_headless` | Run Playwright headless (`true`) or headed (`false`) | `true` |
 
 ## Credentials
 
@@ -32,14 +34,37 @@ PYTHONPATH=src python3 -m autopom.cli.main \
   --output-dir "output" \
   --max-depth 3 \
   --max-pages 20 \
-  --pom-language "javascript"
+  --pom-language "javascript" \
+  --browser-adapter "mock"
 ```
+
+## Guided execution
+
+Use `bash run.sh` for an interactive flow with enterprise-style prompts:
+
+- URL, language, adapter, depth/pages
+- transparent package/browser setup
+- final execution preview before run
 
 ## Language aliases
 
 - `js` normalizes to `javascript`.
 - `ts` normalizes to `typescript`.
 - Unsupported values raise a validation error before crawl execution.
+
+## Browser adapter options
+
+- `mock`: deterministic adapter for local testing and CI-safe runs.
+- `playwright`: real browser crawl against live web applications.
+- CLI shortcut: `--headed` turns off headless mode for Playwright runs.
+
+## Reporting outputs
+
+Every run writes:
+
+- `reports/crawl_summary.md` for crawl quality and selector confidence.
+- `reports/execution_summary.md` for stakeholder-friendly run summary.
+- `reports/execution_summary.json` for downstream analytics/dashboards.
 
 ## Recommended policy baseline
 

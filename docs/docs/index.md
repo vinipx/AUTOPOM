@@ -25,5 +25,10 @@ AutoPOM-Agent is an AI autonomous spider that crawls web applications and genera
 ## What's new
 
 - Configurable `pom_language` with support for `java`, `javascript`, and `typescript`.
+- Configurable `browser_adapter` with `mock` and live `playwright` modes.
 - Language-specific output folders under `output/<language>/`.
-- Extended integration and unit tests validating language selection behavior.
+- Live progress logs during execution (`[CRAWL]`, `[MAP]`, `[SKIP]`).
+- Execution summary reports for managerial visibility:
+  - `reports/execution_summary.md`
+  - `reports/execution_summary.json`
+- Extended integration and unit tests validating language and adapter behavior.

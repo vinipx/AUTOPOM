@@ -13,12 +13,19 @@ Key fields:
 - `denied_domains: list[str]`
 - `output_dir: Path`
 - `pom_language: str`
+- `browser_adapter: str`
+- `playwright_headless: bool`
 
 `pom_language` accepts:
 
 - `java`
 - `javascript` (alias: `js`)
 - `typescript` (alias: `ts`)
+
+`browser_adapter` accepts:
+
+- `mock`
+- `playwright` (alias: `pw`)
 
 ## `BrowserAdapter`
 
@@ -32,6 +39,17 @@ Methods:
 - `extract_interactive_dom_summary(max_nodes=120)`
 - `capture_screenshot(scale=0.4)`
 - `is_visible(selector, timeout_ms=1500)`
+- `close()`
+
+## Progress hook events
+
+`AutoPomOrchestrator` supports a progress callback used by the CLI to stream runtime visibility.
+
+Event types:
+
+- `dequeue` - URL picked from frontier queue.
+- `modeled` - page model generated and persisted.
+- `skip` - URL ignored with a reason (policy, duplicate, depth).
 
 ## `PageModel`
 
@@ -59,3 +77,12 @@ Includes:
 Compatibility helper:
 
 - `java_paths` is preserved as an alias to `pom_paths` for existing integrations.
+
+## Execution summary artifacts
+
+CLI runs also emit:
+
+- `reports/execution_summary.md` (manager-facing)
+- `reports/execution_summary.json` (machine-facing)
+
+These include effective configuration, elapsed time, counts for pages/elements/actions, and artifact paths.

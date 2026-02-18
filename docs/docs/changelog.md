@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0
+
+- Added live `playwright` browser adapter with CLI/config selection.
+- Added enterprise-grade `run.sh` guided wizard with transparent dependency setup.
+- Added optimized dependency/runtime checks to skip unnecessary reinstall work.
+- Added live execution progress logs (`[CRAWL]`, `[MAP]`, `[SKIP]`).
+- Added run-end managerial summaries:
+  - `reports/execution_summary.md`
+  - `reports/execution_summary.json`
+
 ## 0.2.0
 
 - Added configurable multi-language Playwright POM generation (`java`, `javascript`, `typescript`).
