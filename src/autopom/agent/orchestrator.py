@@ -84,7 +84,11 @@ class AutoPomOrchestrator:
             if current.depth > self.config.max_depth:
                 self._emit_progress(
                     "skip",
-                    {"url": current.url, "reason": "depth_limit", "depth": current.depth},
+                    {
+                        "url": current.url,
+                        "reason": "depth_limit",
+                        "depth": current.depth,
+                    },
                 )
                 continue
             if not self._is_allowed(current.url):
@@ -116,7 +120,9 @@ class AutoPomOrchestrator:
             pom_paths.append(self.pom_generator.generate_page(page_model))
 
             self.state.page_count += 1
-            element_count = sum(len(section.elements) for section in page_model.sections)
+            element_count = sum(
+                len(section.elements) for section in page_model.sections
+            )
             self._emit_progress(
                 "modeled",
                 {

@@ -32,7 +32,9 @@ def _write_execution_summary(
 
     total_elements = sum(len(section.elements) for p in pages for section in p.sections)
     total_actions = sum(len(p.actions) for p in pages)
-    confidence_values = [e.confidence for p in pages for s in p.sections for e in s.elements]
+    confidence_values = [
+        e.confidence for p in pages for s in p.sections for e in s.elements
+    ]
     avg_confidence = (
         (sum(confidence_values) / len(confidence_values)) if confidence_values else 0.0
     )
