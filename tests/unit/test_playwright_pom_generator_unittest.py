@@ -101,6 +101,13 @@ class TestPlaywrightPomGenerator(unittest.TestCase):
         cfg = CrawlConfig(base_url="https://example.com", pom_language="ts")
         self.assertEqual(cfg.pom_language, "typescript")
 
+        cfg_js = CrawlConfig(base_url="https://example.com", pom_language="js")
+        self.assertEqual(cfg_js.pom_language, "javascript")
+
+    def test_invalid_pom_language_raises_value_error(self) -> None:
+        with self.assertRaises(ValueError):
+            CrawlConfig(base_url="https://example.com", pom_language="ruby")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -96,6 +96,34 @@ class TestOrchestratorIntegration(unittest.TestCase):
                 (output_dir / "typescript" / "pages" / "HomePage.ts").exists()
             )
 
+    def test_generates_javascript_pom_artifacts_when_configured(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+            config = CrawlConfig(
+                base_url="https://example.com",
+                output_dir=output_dir,
+                max_depth=1,
+                max_pages=2,
+                pom_language="javascript",
+            )
+            orchestrator = AutoPomOrchestrator(
+                config=config,
+                browser=MockBrowserUseAdapter(base_url=config.base_url),
+            )
+
+            result = orchestrator.run()
+
+            self.assertTrue(result.pom_paths)
+            self.assertTrue(
+                (output_dir / "javascript" / "base" / "BasePage.js").exists()
+            )
+            self.assertTrue(
+                (output_dir / "javascript" / "pages" / "HomePage.js").exists()
+            )
+
+            # Backward-compatible accessor still exposes generated POM paths.
+            self.assertEqual(result.java_paths, result.pom_paths)
+
 
 if __name__ == "__main__":
     unittest.main()
