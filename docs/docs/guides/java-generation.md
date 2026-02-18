@@ -1,23 +1,39 @@
-# Java Generation Pipeline
+# POM Generation Pipeline (Java, JavaScript, TypeScript)
 
-Java code is generated from page models, not directly from crawl events.
+Code generation is model-driven and language-configurable. AUTOPOM generates output from `PageModel` artifacts, not directly from crawl events.
 
 ## Pipeline
 
 1. Build `PageModel` JSON from extraction stage.
 2. Verify/heal selectors and update confidence.
-3. Render templates for:
-   - `BasePage.java`
-   - `<PageName>.java`
-4. Persist to `output/java`.
+3. Resolve target language via `pom_language`.
+4. Render language-specific classes:
+   - `BasePage.<ext>`
+   - `<PageName>.<ext>`
+5. Persist to `output/<language>`.
+
+## Supported output languages
+
+| Language | CLI value | Extension | Output folder |
+| --- | --- | --- | --- |
+| Java | `java` | `.java` | `output/java` |
+| JavaScript | `javascript` | `.js` | `output/javascript` |
+| TypeScript | `typescript` | `.ts` | `output/typescript` |
+
+## Selection strategy
+
+- Set `--pom-language` in CLI or `pom_language` in `CrawlConfig`.
+- Keep language-specific style differences inside the generator layer.
+- Reuse the same semantic schema and action translation logic for all languages.
 
 ## Clean code rules
 
-- Private locator fields.
+- Encapsulated locator fields in generated page classes.
 - Public intent-level methods (`login`, `searchProduct`, `submitOrder`).
 - Descriptive naming and minimal UI implementation leakage.
+- Base page abstraction shared by all generated page classes.
 
-## Example generated action
+## Example generated actions
 
 ```java
 public LoginPage login(String username, String password) {
@@ -25,5 +41,14 @@ public LoginPage login(String username, String password) {
     passwordInput.fill(password);
     signInButton.click();
     return this;
+}
+```
+
+```typescript
+async login(username: string, password: string): Promise<LoginPage> {
+  await this.usernameInput.fill(username)
+  await this.passwordInput.fill(password)
+  await this.signInButton.click()
+  return this
 }
 ```

@@ -2,7 +2,7 @@
 
 ## Objective
 
-Automate discovery of admin workflows behind role-based authentication.
+Automate discovery of admin workflows behind role-based authentication and generate POM assets in the language used by each QA team.
 
 ## Crawl scope
 
@@ -16,3 +16,4 @@ Automate discovery of admin workflows behind role-based authentication.
 - Use role-scoped credential sets.
 - Run separate crawls per role for better coverage.
 - Compare page models between releases to detect UI drift.
+- Standardize `pom_language` per consuming test repository to avoid manual translation work.

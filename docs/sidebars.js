@@ -25,7 +25,11 @@ const sidebars = {
         "guides/agentic-loop",
         "guides/state-management",
         "guides/element-mapping",
-        "guides/java-generation",
+        {
+          type: "doc",
+          id: "guides/java-generation",
+          label: "POM Generation",
+        },
         "guides/self-healing",
       ],
     },

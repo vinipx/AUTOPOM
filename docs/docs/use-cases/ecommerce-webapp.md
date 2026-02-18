@@ -2,7 +2,7 @@
 
 ## Objective
 
-Generate POM coverage for catalog, product detail, cart, and checkout.
+Generate POM coverage for catalog, product detail, cart, and checkout across multiple automation language stacks.
 
 ## Crawl scope
 
@@ -23,3 +23,6 @@ Generate POM coverage for catalog, product detail, cart, and checkout.
 
 - At least 90% selector verification pass rate in checkout-critical pages.
 - Reusable action methods for add-to-cart and checkout steps.
+- Language-targeted output for team stack:
+  - `output/java` for Java-based QA platforms.
+  - `output/javascript` or `output/typescript` for JS/TS-native frameworks.

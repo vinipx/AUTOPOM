@@ -4,7 +4,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'AutoPOM-Agent',
-  tagline: 'Autonomous Web Discovery and Java Playwright POM Generation',
+  tagline: 'Autonomous Web Discovery and Multi-language Playwright POM Generation',
   favicon: 'img/logo.svg',
 
   url: process.env.DOCS_URL || 'https://vinipx.github.io',
@@ -71,7 +71,7 @@ const config = {
       announcementBar: {
         id: "autopom_v1",
         content:
-          '🤖 AutoPOM-Agent — AI autonomous crawling + resilient selector mapping + Java Playwright POM synthesis.',
+          '🤖 AutoPOM-Agent — AI autonomous crawling + resilient selector mapping + Java/JavaScript/TypeScript Playwright POM synthesis.',
         backgroundColor: "#111111",
         textColor: "#d4d4d8",
         isCloseable: true,
@@ -118,7 +118,7 @@ const config = {
               { label: "Agentic Loop", to: "/docs/guides/agentic-loop" },
               { label: "State Management", to: "/docs/guides/state-management" },
               { label: "Element Mapping", to: "/docs/guides/element-mapping" },
-              { label: "Java Synthesis", to: "/docs/guides/java-generation" },
+              { label: "POM Generation", to: "/docs/guides/java-generation" },
               { label: "Self-Healing", to: "/docs/guides/self-healing" },
             ],
           },

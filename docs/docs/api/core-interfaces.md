@@ -12,6 +12,13 @@ Key fields:
 - `same_origin_only: bool`
 - `denied_domains: list[str]`
 - `output_dir: Path`
+- `pom_language: str`
+
+`pom_language` accepts:
+
+- `java`
+- `javascript` (alias: `js`)
+- `typescript` (alias: `ts`)
 
 ## `BrowserAdapter`
 
@@ -37,3 +44,18 @@ Includes:
 - inferred actions
 - discovered links
 - navigation hints
+
+## `CrawlResult`
+
+Primary run result returned by orchestrator.
+
+Includes:
+
+- `pages: list[PageModel]`
+- `model_paths: list[Path]`
+- `pom_paths: list[Path]` (language-specific generated artifacts)
+- `report_path: Path`
+
+Compatibility helper:
+
+- `java_paths` is preserved as an alias to `pom_paths` for existing integrations.

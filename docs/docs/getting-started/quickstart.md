@@ -17,11 +17,23 @@ npm start
 
 ```bash
 cd ..
-PYTHONPATH=src python3 -m autopom.cli.main --base-url "https://example.com" --output-dir "output"
+PYTHONPATH=src python3 -m autopom.cli.main \
+  --base-url "https://example.com" \
+  --output-dir "output" \
+  --pom-language "java"
 ```
 
 ## Generated artifacts
 
 - `output/models_json` page models
-- `output/java` generated Java classes
+- `output/<language>` generated Playwright POM classes (`java`, `javascript`, `typescript`)
 - `output/reports/crawl_summary.md` run summary
+
+## Try another POM language
+
+```bash
+PYTHONPATH=src python3 -m autopom.cli.main \
+  --base-url "https://example.com" \
+  --output-dir "output" \
+  --pom-language "typescript"
+```

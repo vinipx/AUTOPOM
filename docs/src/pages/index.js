@@ -13,11 +13,11 @@ function HeroBanner() {
           <div className={styles.heroBadge}>Autonomous Test Intelligence</div>
           <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
           <p className={styles.heroSubtitle}>
-            AI spider for web discovery and Java Playwright Page Objects
+            AI spider for web discovery and multi-language Playwright Page Objects
           </p>
           <p className={styles.heroDescription}>
             AutoPOM-Agent self-navigates your application, maps resilient selectors,
-            infers semantic element names, and synthesizes clean Java POM code with
+            infers semantic element names, and synthesizes clean POM code (Java, JavaScript, or TypeScript) with
             built-in selector verification.
           </p>
           <div className={styles.heroButtons}>
@@ -57,11 +57,11 @@ const capabilityFeatures = [
       'Builds ranked fallback selectors and avoids unstable IDs/classes common in React and styled-component ecosystems.',
   },
   {
-    badge: 'JAVA',
+    badge: 'POM',
     color: '#0ea5e9',
     title: 'POM Synthesis',
     description:
-      'Transforms structured page models into compile-ready Java Playwright Page Object classes with clean encapsulation.',
+      'Transforms structured page models into compile-ready Playwright Page Object classes in Java, JavaScript, or TypeScript.',
   },
   {
     badge: 'AI',
@@ -100,9 +100,9 @@ const coreFeatures = [
   },
   {
     icon: '☕',
-    title: 'Clean Java Output',
+    title: 'Language-Targeted Output',
     description:
-      'Generated classes use descriptive names, encapsulated locators, and intent-level action methods.',
+      'Generate Java, JavaScript, or TypeScript page objects with descriptive names, encapsulated locators, and intent-level methods.',
   },
   {
     icon: '🔐',
@@ -125,8 +125,8 @@ const techStack = [
   { name: 'Playwright', desc: 'Execution + Validation' },
   { name: 'OpenAI/Gemini', desc: 'Vision + Reasoning' },
   { name: 'JSON Schema', desc: 'Intermediate Contract' },
-  { name: 'Jinja2', desc: 'Java Templating' },
-  { name: 'Java', desc: 'POM Output' },
+  { name: 'Generator Core', desc: 'Language Rendering' },
+  { name: 'JavaScript/TypeScript/Java', desc: 'POM Output' },
   { name: 'Mermaid', desc: 'Architecture Diagrams' },
 ];
 
@@ -136,7 +136,7 @@ function CapabilitiesSection() {
       <div className="container">
         <div className={styles.sectionHeader}>
           <h2>End-to-End Automation Intelligence</h2>
-          <p>From autonomous crawl to production-ready Java Page Objects</p>
+          <p>From autonomous crawl to production-ready Playwright Page Objects</p>
         </div>
         <div className={styles.capabilityGrid}>
           {capabilityFeatures.map((item, idx) => (
@@ -172,7 +172,7 @@ function AIAgentSection() {
             </div>
             <div className={styles.aiFeatureItem}>
               <strong>Deterministic Code Synthesis</strong>
-              <span>Generates consistent Java POM classes from a stable JSON schema contract.</span>
+              <span>Generates consistent POM classes in Java, JavaScript, or TypeScript from a stable JSON schema contract.</span>
             </div>
             <div className={styles.aiFeatureItem}>
               <strong>Verification Before Save</strong>
@@ -200,9 +200,9 @@ function ArchitectureSection() {
         </div>
         <div className={styles.archDiagram}>
           <div className={styles.archLayer} data-layer="4">
-            <div className={styles.archLabel}>Layer 4 - Java Output</div>
+            <div className={styles.archLabel}>Layer 4 - Multi-language POM Output</div>
             <div className={styles.archClasses}>
-              BasePage · Page Objects · Component Objects · Reports
+              BasePage · Page Objects · Reports
             </div>
           </div>
           <div className={styles.archLayer} data-layer="3">
@@ -284,7 +284,7 @@ function QuickStartSection() {
       <div className="container">
         <div className={styles.sectionHeader}>
           <h2>Quick Start</h2>
-          <p>Run your first crawl and generate Java page objects</p>
+          <p>Run your first crawl and generate language-specific page objects</p>
         </div>
         <div className={styles.codeBlock}>
           <pre>
@@ -296,7 +296,7 @@ npm install
 npm start
 
 # run AutoPOM locally (project root)
-PYTHONPATH=src python3 -m autopom.cli.main --base-url "https://example.com"`}</code>
+PYTHONPATH=src python3 -m autopom.cli.main --base-url "https://example.com" --pom-language "typescript"`}</code>
           </pre>
         </div>
       </div>

@@ -10,6 +10,7 @@ Run AutoPOM-Agent on a public site and inspect generated outputs.
 PYTHONPATH=src python3 -m autopom.cli.main \
   --base-url "https://example.com" \
   --output-dir "output" \
+  --pom-language "javascript" \
   --max-depth 2 \
   --max-pages 20
 ```
@@ -17,5 +18,16 @@ PYTHONPATH=src python3 -m autopom.cli.main \
 ## Validate outputs
 
 - Open `output/models_json` for extracted page models.
-- Open `output/java/pages` for generated classes.
+- Open `output/javascript/pages` for generated classes.
 - Open `output/reports/crawl_summary.md` for confidence metrics.
+
+## Repeat with TypeScript
+
+```bash
+PYTHONPATH=src python3 -m autopom.cli.main \
+  --base-url "https://example.com" \
+  --output-dir "output" \
+  --pom-language "typescript" \
+  --max-depth 2 \
+  --max-pages 20
+```

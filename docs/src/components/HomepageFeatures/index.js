@@ -24,11 +24,11 @@ const FeatureList = [
     ),
   },
   {
-    title: 'Java POM Synthesis',
+    title: 'Multi-language POM Synthesis',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Deterministic generation of Java Playwright Page Objects from validated
+        Deterministic generation of Java, JavaScript, or TypeScript Playwright Page Objects from validated
         intermediate JSON schemas.
       </>
     ),

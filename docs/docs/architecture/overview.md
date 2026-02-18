@@ -10,7 +10,7 @@ flowchart TD
     D --> E[Extract DOM + Visual Hints]
     E --> F[Map Elements + Build JSON PageModel]
     F --> G[Verify/Heal Selectors]
-    G --> H[Generate Java POM]
+    G --> H[Generate POM (Java/JS/TS)]
     H --> I[Persist Output + Report]
     I --> B
 ```
@@ -21,10 +21,11 @@ flowchart TD
 - **State Store:** Tracks visited signatures and graph edges.
 - **Semantic Analyzer:** Converts compact browser context to structured models.
 - **Self-Healing Verifier:** Tests and repairs selectors before persistence.
-- **Java Synthesizer:** Produces compile-ready Java Playwright page objects.
+- **POM Synthesizer:** Produces compile-ready Playwright page objects in Java, JavaScript, or TypeScript.
 
 ## Design principles
 
 - Token-efficient prompts from compact DOM context.
 - Deterministic code generation through schema contracts.
 - Guardrails first: domain boundaries, depth limits, and cycle detection.
+- Configuration-driven output language with shared semantic model and generation pipeline.

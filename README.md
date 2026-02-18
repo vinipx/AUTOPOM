@@ -8,13 +8,13 @@
 [![Ruff](https://img.shields.io/badge/Ruff-Code%20Quality-D7FF64)](https://docs.astral.sh/ruff/)
 [![Docs](https://img.shields.io/badge/Docs-Docusaurus-2E8555?logo=docusaurus&logoColor=white)](https://docusaurus.io/)
 
-Autonomous web crawling and Java Playwright Page Object Model generation for scalable UI test automation.
+Autonomous web crawling and Playwright Page Object Model generation in Java, JavaScript, and TypeScript.
 
 </div>
 
 ## Overview
 
-AUTOPOM crawls web applications, extracts interactive UI structure, verifies selector reliability, and generates standardized Java Playwright page objects alongside machine-readable page models.
+AUTOPOM crawls web applications, extracts interactive UI structure, verifies selector reliability, and generates standardized Playwright page objects (Java, JavaScript, or TypeScript) alongside machine-readable page models.
 
 The project is designed for teams that need predictable POM generation, repeatable crawl workflows, and operational guardrails for enterprise-scale automation pipelines.
 
@@ -23,8 +23,8 @@ The project is designed for teams that need predictable POM generation, repeatab
 - Autonomous crawl orchestration with depth, page, and domain controls.
 - Interactive element extraction and semantic page modeling.
 - Selector verification and fallback-based self-healing.
-- Java Playwright page object generation from structured models.
-- Structured persistence (`JSON`, Java classes, crawl summary reports).
+- Multi-language Playwright POM generation (`java`, `javascript`, `typescript`).
+- Structured persistence (`JSON` models, language-specific code, crawl summary reports).
 - CI-ready quality gates with Ruff formatting and lint checks.
 
 ## Core Capabilities
@@ -38,8 +38,8 @@ The project is designed for teams that need predictable POM generation, repeatab
 ### Model-Driven Generation
 
 - Creates normalized `PageModel` JSON files for each discovered route.
-- Converts model sections/elements/actions into Java page object classes.
-- Generates a reusable base class and route-specific page files.
+- Converts model sections/elements/actions into language-specific page object classes.
+- Generates a reusable base class and route-specific page files for the selected target language.
 
 ### Selector Reliability and Healing
 
@@ -53,8 +53,8 @@ The project is designed for teams that need predictable POM generation, repeatab
 2. Observe page state and extract compact interactive DOM context.
 3. Build semantic page and action models.
 4. Verify and heal selectors.
-5. Generate Java POM artifacts.
-6. Persist JSON models, Java code, and crawl reports.
+5. Generate POM artifacts for the configured language.
+6. Persist JSON models, generated code, and crawl reports.
 
 ## Installation
 
@@ -77,9 +77,12 @@ python -m pip install -e ".[ai,browser,dev]"
 PYTHONPATH=src python3 -m autopom.cli.main \
   --base-url "https://example.com" \
   --output-dir "output" \
+  --pom-language "typescript" \
   --max-depth 3 \
   --max-pages 20
 ```
+
+Supported values for `--pom-language`: `java`, `javascript`, `typescript`.
 
 ## Configuration
 
@@ -97,14 +100,28 @@ The crawl engine is configured through `CrawlConfig` (`src/autopom/config.py`).
 | `preferred_testid_attrs` | test-id attributes | Prioritized attributes for robust selectors. |
 | `auth_user_env` | `AUTOPOM_USERNAME` | Environment variable name for username. |
 | `auth_pass_env` | `AUTOPOM_PASSWORD` | Environment variable name for password. |
+| `pom_language` | `java` | POM output language (`java`, `javascript`, `typescript`). |
 
 ## Output Structure
 
 After a run, outputs are created under the selected output directory:
 
 - `models_json/` - JSON page models and metadata per discovered page.
-- `java/` - Generated Java Playwright page objects and base page class.
+- `<language>/` - Generated Playwright page objects and base page class (`java/`, `javascript/`, or `typescript/`).
 - `reports/crawl_summary.md` - Crawl quality and coverage summary.
+
+### Language-specific examples
+
+```bash
+# Java (default)
+PYTHONPATH=src python3 -m autopom.cli.main --base-url "https://example.com" --pom-language java
+
+# JavaScript
+PYTHONPATH=src python3 -m autopom.cli.main --base-url "https://example.com" --pom-language javascript
+
+# TypeScript
+PYTHONPATH=src python3 -m autopom.cli.main --base-url "https://example.com" --pom-language typescript
+```
 
 ## Enterprise Use Cases
 
@@ -124,7 +141,7 @@ After a run, outputs are created under the selected output directory:
 
 - `docs/docs/architecture/overview.md` - platform architecture and flow.
 - `docs/docs/guides/agentic-loop.md` - autonomous crawl loop behavior.
-- `docs/docs/guides/java-generation.md` - Java POM generation details.
+- `docs/docs/guides/java-generation.md` - multi-language POM generation details.
 - `docs/docs/guides/self-healing.md` - selector verification and healing.
 - `docs/docs/getting-started/quickstart.md` - documentation quickstart.
 

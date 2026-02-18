@@ -12,7 +12,7 @@ Before selectors are persisted, AutoPOM-Agent validates them immediately.
 
 ## Why it matters
 
-- Prevents propagating broken locators into generated Java code.
+- Prevents propagating broken locators into generated language-specific code.
 - Improves first-pass reliability of generated POM classes.
 - Reduces test maintenance after UI changes.
 
