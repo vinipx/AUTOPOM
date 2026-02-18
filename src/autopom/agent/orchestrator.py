@@ -14,7 +14,10 @@ from autopom.extraction.schema import (
     PageModel,
     SectionModel,
 )
-from autopom.generation.java_generator import JavaGenerator, JavaGeneratorConfig
+from autopom.generation.java_generator import (
+    JavaGeneratorConfig,
+    PlaywrightPomGenerator,
+)
 from autopom.healing.selector_verifier import SelectorVerifier
 from autopom.io.persistence import Persistence
 from autopom.io.report_writer import ReportWriter
@@ -24,8 +27,13 @@ from autopom.io.report_writer import ReportWriter
 class CrawlResult:
     pages: list[PageModel]
     model_paths: list[Path]
-    java_paths: list[Path]
+    pom_paths: list[Path]
     report_path: Path
+
+    @property
+    def java_paths(self) -> list[Path]:
+        # Backward compatibility for existing callers/tests.
+        return self.pom_paths
 
 
 class AutoPomOrchestrator:
@@ -40,17 +48,18 @@ class AutoPomOrchestrator:
         template_dir = (
             Path(__file__).resolve().parents[1] / "generation" / "java_templates"
         )
-        self.java_generator = JavaGenerator(
+        self.pom_generator = PlaywrightPomGenerator(
             output_dir=config.output_dir,
+            language=config.pom_language,
             template_dir=template_dir,
-            config=JavaGeneratorConfig(),
+            java_config=JavaGeneratorConfig(),
         )
         self.verifier = SelectorVerifier(browser)
 
     def run(self) -> CrawlResult:
         pages: list[PageModel] = []
         model_paths: list[Path] = []
-        java_paths: list[Path] = [self.java_generator.generate_base_page()]
+        pom_paths: list[Path] = [self.pom_generator.generate_base_page()]
 
         while self.state.frontier and self.state.page_count < self.config.max_pages:
             current = self.state.dequeue()
@@ -78,7 +87,7 @@ class AutoPomOrchestrator:
 
             pages.append(page_model)
             model_paths.append(self.persistence.write_page_model(page_model))
-            java_paths.append(self.java_generator.generate_page(page_model))
+            pom_paths.append(self.pom_generator.generate_page(page_model))
 
             self.state.page_count += 1
             self._enqueue_links(dom_summary.get("links", []), current.depth + 1)
@@ -87,7 +96,7 @@ class AutoPomOrchestrator:
         return CrawlResult(
             pages=pages,
             model_paths=model_paths,
-            java_paths=java_paths,
+            pom_paths=pom_paths,
             report_path=report_path,
         )
 

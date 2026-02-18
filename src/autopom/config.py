@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from autopom.generation.java_generator import normalize_pom_language
+
 
 @dataclass(slots=True)
 class CrawlConfig:
@@ -20,3 +22,7 @@ class CrawlConfig:
     )
     auth_user_env: str = "AUTOPOM_USERNAME"
     auth_pass_env: str = "AUTOPOM_PASSWORD"
+    pom_language: str = "java"
+
+    def __post_init__(self) -> None:
+        self.pom_language = normalize_pom_language(self.pom_language)

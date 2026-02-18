@@ -71,6 +71,31 @@ class TestOrchestratorIntegration(unittest.TestCase):
             self.assertEqual(len(result.pages), 1)
             self.assertEqual(result.pages[0].page_name, "HomePage")
 
+    def test_generates_typescript_pom_artifacts_when_configured(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+            config = CrawlConfig(
+                base_url="https://example.com",
+                output_dir=output_dir,
+                max_depth=1,
+                max_pages=2,
+                pom_language="typescript",
+            )
+            orchestrator = AutoPomOrchestrator(
+                config=config,
+                browser=MockBrowserUseAdapter(base_url=config.base_url),
+            )
+
+            result = orchestrator.run()
+
+            self.assertTrue(result.pom_paths)
+            self.assertTrue(
+                (output_dir / "typescript" / "base" / "BasePage.ts").exists()
+            )
+            self.assertTrue(
+                (output_dir / "typescript" / "pages" / "HomePage.ts").exists()
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
