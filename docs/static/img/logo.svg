@@ -1,6 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="AutoPOM logo">
-  <rect width="128" height="128" rx="20" fill="#0d0d0d"/>
-  <path d="M24 34h80v8H24zM24 60h58v8H24zM24 86h46v8H24z" fill="#60a5fa"/>
-  <circle cx="92" cy="90" r="12" fill="#ef4444"/>
-  <path d="M87 90h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="AutoPOM robot spider logo">
+  <rect width="128" height="128" rx="20" fill="#090c16"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 48l20 8M20 66l20-2M20 84l20-10" stroke="#4f9dff" stroke-width="6"/>
+    <path d="M108 48l-20 8M108 66l-20-2M108 84l-20-10" stroke="#4f9dff" stroke-width="6"/>
+    <path d="M34 34l18 14M94 34L76 48" stroke="#7cc4ff" stroke-width="5"/>
+  </g>
+  <ellipse cx="64" cy="70" rx="28" ry="23" fill="#1a2238" stroke="#6bb6ff" stroke-width="4"/>
+  <rect x="48" y="43" width="32" height="22" rx="7" fill="#0f1526" stroke="#9ad4ff" stroke-width="3"/>
+  <circle cx="58" cy="54" r="4.5" fill="#ff4d6d"/>
+  <circle cx="70" cy="54" r="4.5" fill="#ff4d6d"/>
+  <path d="M61 65h6M64 65v6" stroke="#8ad0ff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="64" cy="33" r="5" fill="#4f9dff"/>
+  <path d="M64 38v7" stroke="#4f9dff" stroke-width="3" stroke-linecap="round"/>
 </svg>
