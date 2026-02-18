@@ -10,7 +10,7 @@ flowchart TD
     D --> E[Extract DOM + Visual Hints]
     E --> F[Map Elements + Build JSON PageModel]
     F --> G[Verify/Heal Selectors]
-    G --> H[Generate POM (Java/JS/TS)]
+    G --> H[Generate POM - Java, JavaScript, TypeScript]
     H --> I[Persist Output + Report]
     I --> B
 ```
