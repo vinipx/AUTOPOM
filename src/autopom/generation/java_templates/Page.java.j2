@@ -1,0 +1,27 @@
+package {{ base_package }}.pages;
+
+import {{ base_package }}.base.BasePage;
+import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.Page;
+
+public class {{ page_name }} extends BasePage {
+{% for element in elements %}
+    private final Locator {{ element.field_name }};
+{% endfor %}
+
+    public {{ page_name }}(Page page) {
+        super(page);
+{% for element in elements %}
+        this.{{ element.field_name }} = locator("{{ element.selector }}");
+{% endfor %}
+    }
+
+{% for method in methods %}
+    public {{ method.return_type }} {{ method.name }}({{ method.params }}) {
+{% for line in method.body %}
+        {{ line }}
+{% endfor %}
+    }
+
+{% endfor %}
+}

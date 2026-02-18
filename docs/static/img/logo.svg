@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="AutoPOM logo">
+  <rect width="128" height="128" rx="20" fill="#0d0d0d"/>
+  <path d="M24 34h80v8H24zM24 60h58v8H24zM24 86h46v8H24z" fill="#60a5fa"/>
+  <circle cx="92" cy="90" r="12" fill="#ef4444"/>
+  <path d="M87 90h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+</svg>

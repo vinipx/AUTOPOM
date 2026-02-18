@@ -1,0 +1,75 @@
+stages:
+  - build
+  - test
+  - deploy
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip/
+    - docs/node_modules/
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  # Override these in GitLab CI/CD Variables when needed.
+  DOCS_URL: ""
+  DOCS_BASE_URL: ""
+
+install_python_dependencies:
+  image: python:3.12-slim
+  stage: build
+  script:
+    - python --version
+    - python -m pip install --upgrade pip
+    - python -m pip install -e .
+    - python -m pip install ruff
+
+quality_checks:
+  image: python:3.12-slim
+  stage: test
+  script:
+    - python -m pip install --upgrade pip
+    - python -m pip install -e .
+    - python -m pip install ruff
+    - ruff check src tests
+    - ruff format --check src tests
+    - bash -n docs.sh
+    - python -m compileall src
+  dependencies:
+    - install_python_dependencies
+
+unit_and_integration_tests:
+  image: python:3.12-slim
+  stage: test
+  script:
+    - python -m pip install --upgrade pip
+    - python -m pip install -e .
+    - PYTHONPATH=src python -m unittest discover -s tests -p "test_*_unittest.py" -v
+  dependencies:
+    - install_python_dependencies
+
+docs_build:
+  image: node:20
+  stage: test
+  script:
+    - cd docs
+    - if [ -f package-lock.json ]; then npm ci; else npm install; fi
+    - export EFFECTIVE_DOCS_URL="${DOCS_URL:-https://${CI_PROJECT_PATH_SLUG}.gitlab.io}"
+    - export EFFECTIVE_DOCS_BASE_URL="${DOCS_BASE_URL:-/}"
+    - DOCS_URL="${EFFECTIVE_DOCS_URL}" DOCS_BASE_URL="${EFFECTIVE_DOCS_BASE_URL}" npm run build
+
+pages:
+  image: node:20
+  stage: deploy
+  script:
+    - cd docs
+    - if [ -f package-lock.json ]; then npm ci; else npm install; fi
+    - export EFFECTIVE_DOCS_URL="${DOCS_URL:-https://${CI_PROJECT_PATH_SLUG}.gitlab.io}"
+    - export EFFECTIVE_DOCS_BASE_URL="${DOCS_BASE_URL:-/}"
+    - DOCS_URL="${EFFECTIVE_DOCS_URL}" DOCS_BASE_URL="${EFFECTIVE_DOCS_BASE_URL}" npm run build
+    - mv build ../public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"

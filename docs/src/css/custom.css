@@ -1,0 +1,577 @@
+/*
+ * TAFLEX Documentation — Professional Enterprise Theme
+ *
+ * Design philosophy:
+ *   Dark mode  = True neutral blacks/charcoals (NO blue tint in backgrounds)
+ *   Light mode = Clean whites and cool grays
+ *   Accent     = Electric blue (#3b82f6) ONLY for interactive elements:
+ *                borders, badges, links, active states, hover highlights
+ *   Typography = Inter / system stack for crisp readability
+ *
+ * Inspired by Bloomberg/enterprise terminal aesthetics — blue signifies
+ * actions, data points, and interactive signals. Never pollutes the
+ * background canvas.
+ */
+
+/* ===================================================================
+  CSS CUSTOM PROPERTIES — Light Mode
+  =================================================================== */
+:root {
+  /* ── Neutral palette ────────────────────────────────────────────── */
+  --taflex-white:    #ffffff;
+  --taflex-gray-50:  #fafafa;
+  --taflex-gray-100: #f4f4f5;
+  --taflex-gray-200: #e4e4e7;
+  --taflex-gray-300: #d4d4d8;
+  --taflex-gray-400: #a1a1aa;
+  --taflex-gray-500: #71717a;
+  --taflex-gray-600: #52525b;
+  --taflex-gray-700: #3f3f46;
+  --taflex-gray-800: #27272a;
+  --taflex-gray-900: #18181b;
+  --taflex-black:    #09090b;
+
+  /* ── Blue accent palette (used sparingly) ──────────────────────── */
+  --taflex-blue-900: #1e3a5f;
+  --taflex-blue-800: #1e40af;
+  --taflex-blue-700: #1d4ed8;
+  --taflex-blue-600: #2563eb;
+  --taflex-blue-500: #3b82f6;
+  --taflex-blue-400: #60a5fa;
+  --taflex-blue-300: #93c5fd;
+  --taflex-blue-200: #bfdbfe;
+  --taflex-blue-100: #dbeafe;
+  --taflex-blue-50:  #eff6ff;
+
+  /* ── Semantic accents ───────────────────────────────────────────── */
+  --taflex-green:  #22c55e;
+  --taflex-amber:  #f59e0b;
+  --taflex-red:    #ef4444;
+  --taflex-violet: #8b5cf6;
+
+  /* ── Docusaurus color bindings — Light mode ─────────────────────── */
+  --ifm-color-primary:          #2563eb;
+  --ifm-color-primary-dark:     #1d4ed8;
+  --ifm-color-primary-darker:   #1e40af;
+  --ifm-color-primary-darkest:  #1e3a5f;
+  --ifm-color-primary-light:    #3b82f6;
+  --ifm-color-primary-lighter:  #60a5fa;
+  --ifm-color-primary-lightest: #93c5fd;
+
+  --ifm-color-success: #22c55e;
+  --ifm-color-warning: #f59e0b;
+  --ifm-color-danger:  #ef4444;
+
+  /* ── Typography ─────────────────────────────────────────────────── */
+  --ifm-font-family-base: 'Inter', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  --ifm-font-family-monospace: 'JetBrains Mono', 'Fira Code', 'SF Mono',
+    'Cascadia Code', Menlo, Consolas, 'Courier New', monospace;
+  --ifm-heading-font-family: var(--ifm-font-family-base);
+  --ifm-heading-font-weight: 700;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.65;
+
+  /* ── Spacing & radius ───────────────────────────────────────────── */
+  --ifm-global-radius: 8px;
+  --ifm-code-border-radius: 6px;
+
+  /* ── Navbar — solid dark ────────────────────────────────────────── */
+  --ifm-navbar-background-color: var(--taflex-gray-900);
+  --ifm-navbar-link-color: var(--taflex-gray-300);
+  --ifm-navbar-link-hover-color: var(--taflex-white);
+  --ifm-navbar-height: 3.75rem;
+  --ifm-navbar-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.06);
+
+  /* ── Footer — solid dark ────────────────────────────────────────── */
+  --ifm-footer-background-color: var(--taflex-black);
+  --ifm-footer-color: var(--taflex-gray-500);
+  --ifm-footer-link-color: var(--taflex-gray-300);
+  --ifm-footer-link-hover-color: var(--taflex-blue-400);
+  --ifm-footer-padding-vertical: 2.5rem;
+
+  /* ── Code blocks ────────────────────────────────────────────────── */
+  --ifm-code-font-size: 87.5%;
+  --ifm-code-padding-vertical: 0.15rem;
+  --ifm-code-padding-horizontal: 0.35rem;
+
+  /* ── Shadows ────────────────────────────────────────────────────── */
+  --taflex-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --taflex-shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+  --taflex-shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* ===================================================================
+  DARK MODE — Pure neutral blacks/charcoals. Blue = accent only.
+  =================================================================== */
+[data-theme='dark'] {
+  --ifm-color-primary:          #60a5fa;
+  --ifm-color-primary-dark:     #3b82f6;
+  --ifm-color-primary-darker:   #2563eb;
+  --ifm-color-primary-darkest:  #1d4ed8;
+  --ifm-color-primary-light:    #93c5fd;
+  --ifm-color-primary-lighter:  #bfdbfe;
+  --ifm-color-primary-lightest: #dbeafe;
+
+  /* Backgrounds — PURE neutrals, no blue tint */
+  --ifm-background-color:         #0d0d0d;
+  --ifm-background-surface-color: #141414;
+  --ifm-navbar-background-color:  #0d0d0d;
+  --ifm-footer-background-color:  #080808;
+
+  --taflex-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --taflex-shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.5);
+  --taflex-shadow-lg: 0 8px 24px 0 rgba(0, 0, 0, 0.6);
+}
+
+/* ===================================================================
+  GLOBAL TYPOGRAPHY
+  =================================================================== */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.02em;
+}
+
+.markdown h1:first-child {
+  font-size: 2.25rem;
+  margin-bottom: 1.5rem;
+  color: var(--taflex-gray-900);
+  border-bottom: 3px solid var(--taflex-blue-500);
+  padding-bottom: 0.75rem;
+}
+
+[data-theme='dark'] .markdown h1:first-child {
+  color: var(--taflex-gray-100);
+  border-bottom-color: var(--taflex-blue-500);
+}
+
+.markdown h2 {
+  font-size: 1.625rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--taflex-gray-800);
+  border-bottom: 1px solid var(--taflex-gray-200);
+  padding-bottom: 0.5rem;
+}
+
+[data-theme='dark'] .markdown h2 {
+  color: var(--taflex-gray-200);
+  border-bottom-color: #2a2a2a;
+}
+
+.markdown h3 {
+  font-size: 1.25rem;
+  color: var(--taflex-gray-700);
+  margin-top: 2rem;
+}
+
+[data-theme='dark'] .markdown h3 {
+  color: var(--taflex-gray-300);
+}
+
+/* ===================================================================
+  NAVBAR
+  =================================================================== */
+.navbar {
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.navbar__title {
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: -0.03em;
+  color: var(--taflex-white) !important;
+}
+
+.navbar__link {
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.navbar__link--active {
+  color: var(--taflex-blue-400) !important;
+  font-weight: 600;
+}
+
+.navbar__logo img {
+  border-radius: 6px;
+}
+
+/* ===================================================================
+  SIDEBAR
+  =================================================================== */
+.theme-doc-sidebar-container {
+  border-right: 1px solid var(--taflex-gray-200);
+}
+
+[data-theme='dark'] .theme-doc-sidebar-container {
+  border-right-color: #1f1f1f;
+}
+
+.menu__link {
+  font-size: 0.9rem;
+  font-weight: 450;
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.menu__link:hover {
+  background-color: var(--taflex-gray-50);
+}
+
+[data-theme='dark'] .menu__link:hover {
+  background-color: #1a1a1a;
+}
+
+.menu__link--active {
+  font-weight: 600;
+  background-color: var(--taflex-blue-50) !important;
+  border-left: 3px solid var(--taflex-blue-500);
+  color: var(--taflex-blue-700) !important;
+}
+
+[data-theme='dark'] .menu__link--active {
+  background-color: rgba(96, 165, 250, 0.08) !important;
+  color: var(--taflex-blue-400) !important;
+}
+
+.menu__list-item-collapsible .menu__link {
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--taflex-gray-500);
+}
+
+/* ===================================================================
+  CONTENT AREA
+  =================================================================== */
+.main-wrapper {
+  background-color: var(--taflex-white);
+}
+
+[data-theme='dark'] .main-wrapper {
+  background-color: #0d0d0d;
+}
+
+article {
+  max-width: 52rem;
+}
+
+/* ===================================================================
+  CODE BLOCKS — Terminal aesthetic
+  =================================================================== */
+.prism-code {
+  border: 1px solid var(--taflex-gray-200);
+  box-shadow: var(--taflex-shadow-sm);
+}
+
+[data-theme='dark'] .prism-code {
+  border-color: #2a2a2a;
+  background-color: #111111 !important;
+}
+
+code {
+  background-color: var(--taflex-gray-100);
+  color: var(--taflex-blue-800);
+  border: 1px solid var(--taflex-gray-200);
+  font-weight: 500;
+}
+
+[data-theme='dark'] code {
+  background-color: #1a1a1a;
+  color: var(--taflex-blue-400);
+  border-color: #2a2a2a;
+}
+
+div[class*='codeBlockTitle'] {
+  background-color: var(--taflex-gray-900) !important;
+  color: var(--taflex-gray-300) !important;
+  border-bottom: 2px solid var(--taflex-blue-500);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ===================================================================
+  TABLES — Data-grid aesthetic
+  =================================================================== */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--taflex-gray-200);
+  border-radius: var(--ifm-global-radius);
+  overflow: hidden;
+  box-shadow: var(--taflex-shadow-sm);
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+[data-theme='dark'] table {
+  border-color: #2a2a2a;
+}
+
+thead tr {
+  background-color: var(--taflex-gray-900) !important;
+}
+
+thead th {
+  color: var(--taflex-white) !important;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1rem !important;
+  border-bottom: 2px solid var(--taflex-blue-500) !important;
+  white-space: nowrap;
+}
+
+tbody tr {
+  transition: background-color 0.1s ease;
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--taflex-gray-50);
+}
+
+[data-theme='dark'] tbody tr:nth-child(even) {
+  background-color: #141414;
+}
+
+tbody tr:hover {
+  background-color: var(--taflex-blue-50);
+}
+
+[data-theme='dark'] tbody tr:hover {
+  background-color: rgba(96, 165, 250, 0.04);
+}
+
+tbody td {
+  padding: 0.6rem 1rem !important;
+  border-bottom: 1px solid var(--taflex-gray-100) !important;
+}
+
+[data-theme='dark'] tbody td {
+  border-bottom-color: #1f1f1f !important;
+}
+
+/* ===================================================================
+  ADMONITIONS
+  =================================================================== */
+.admonition {
+  border-radius: var(--ifm-global-radius);
+  border-left-width: 4px;
+  box-shadow: var(--taflex-shadow-sm);
+}
+
+.admonition-heading h5 {
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+}
+
+/* ===================================================================
+  LINKS
+  =================================================================== */
+.markdown a {
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.markdown a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ===================================================================
+  TOC (Right sidebar)
+  =================================================================== */
+.table-of-contents__link {
+  font-size: 0.82rem;
+}
+
+.table-of-contents__link--active {
+  font-weight: 600;
+  color: var(--ifm-color-primary);
+}
+
+/* ===================================================================
+  ANNOUNCEMENT BAR
+  =================================================================== */
+div[class*='announcementBar'] {
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+div[class*='announcementBar'] a {
+  color: var(--taflex-blue-400);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+/* ===================================================================
+  FOOTER
+  =================================================================== */
+.footer {
+  border-top: 1px solid #1f1f1f;
+}
+
+.footer__title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--taflex-gray-400);
+}
+
+.footer__link-item {
+  font-size: 0.9rem;
+  line-height: 2;
+}
+
+.footer__copyright {
+  font-size: 0.8rem;
+  opacity: 0.5;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #1f1f1f;
+}
+
+/* ===================================================================
+  MERMAID DIAGRAMS
+  =================================================================== */
+.docusaurus-mermaid-container {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: var(--taflex-gray-50);
+  border: 1px solid var(--taflex-gray-200);
+  border-radius: var(--ifm-global-radius);
+  box-shadow: var(--taflex-shadow-sm);
+}
+
+[data-theme='dark'] .docusaurus-mermaid-container {
+  background: #141414;
+  border-color: #2a2a2a;
+}
+
+/* ===================================================================
+  BADGES / PILLS
+  =================================================================== */
+.badge--protocol {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: 4px;
+  margin-right: 0.25rem;
+}
+
+.badge--web    { background: var(--taflex-blue-600); color: white; }
+.badge--api    { background: var(--taflex-green);    color: white; }
+.badge--mobile { background: var(--taflex-violet);   color: white; }
+.badge--data   { background: var(--taflex-amber);    color: white; }
+
+/* ===================================================================
+  PAGINATION
+  =================================================================== */
+.pagination-nav__link {
+  border-radius: var(--ifm-global-radius);
+  border-color: var(--taflex-gray-200);
+  transition: border-color 0.2s ease;
+}
+
+.pagination-nav__link:hover {
+  border-color: var(--ifm-color-primary);
+}
+
+[data-theme='dark'] .pagination-nav__link {
+  border-color: #2a2a2a;
+}
+
+[data-theme='dark'] .pagination-nav__link:hover {
+  border-color: var(--ifm-color-primary);
+}
+
+/* ===================================================================
+  SCROLLBAR (Webkit)
+  =================================================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--taflex-gray-300);
+  border-radius: 4px;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #333333;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--taflex-gray-400);
+}
+
+/* ===================================================================
+  SELECTION
+  =================================================================== */
+::selection {
+  background: rgba(59, 130, 246, 0.2);
+  color: inherit;
+}
+
+/* ===================================================================
+  SEARCH
+  =================================================================== */
+.DocSearch-Button {
+  border-radius: 6px !important;
+}
+
+/* ===================================================================
+  RESPONSIVE
+  =================================================================== */
+@media (max-width: 996px) {
+  .markdown h1:first-child {
+    font-size: 1.75rem;
+  }
+
+  .markdown h2 {
+    font-size: 1.375rem;
+  }
+}
+
+/* ===================================================================
+  PRINT STYLES
+  =================================================================== */
+@media print {
+  .navbar, .footer, .theme-doc-sidebar-container,
+  .table-of-contents, div[class*='announcementBar'] {
+    display: none !important;
+  }
+
+  article {
+    max-width: 100% !important;
+  }
+}

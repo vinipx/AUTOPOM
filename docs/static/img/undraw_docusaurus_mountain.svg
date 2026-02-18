@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" role="img" aria-label="mountain illustration">
+  <rect width="400" height="240" fill="#0d0d0d"/>
+  <polygon points="40,210 150,70 250,210" fill="#2563eb"/>
+  <polygon points="160,210 260,100 360,210" fill="#60a5fa"/>
+  <circle cx="310" cy="60" r="20" fill="#ef4444"/>
+</svg>

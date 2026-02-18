@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" role="img" aria-label="tree illustration">
+  <rect width="400" height="240" fill="#111111"/>
+  <rect x="186" y="120" width="28" height="80" fill="#3f3f46"/>
+  <circle cx="200" cy="95" r="55" fill="#22c55e"/>
+  <circle cx="150" cy="120" r="30" fill="#16a34a"/>
+  <circle cx="250" cy="120" r="30" fill="#16a34a"/>
+</svg>
