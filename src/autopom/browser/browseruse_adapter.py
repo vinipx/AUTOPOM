@@ -35,9 +35,21 @@ class MockBrowserUseAdapter:
         path = urlparse(self.url()).path
         if path == "/login":
             elements = [
-                {"role": "textbox", "label": "Username", "selector": "input[name='username']"},
-                {"role": "textbox", "label": "Password", "selector": "input[name='password']"},
-                {"role": "button", "label": "Sign In", "selector": "button:has-text('Sign In')"},
+                {
+                    "role": "textbox",
+                    "label": "Username",
+                    "selector": "input[name='username']",
+                },
+                {
+                    "role": "textbox",
+                    "label": "Password",
+                    "selector": "input[name='password']",
+                },
+                {
+                    "role": "button",
+                    "label": "Sign In",
+                    "selector": "button:has-text('Sign In')",
+                },
             ]
             links = [urljoin(self.base_url, "/forgot-password")]
         else:

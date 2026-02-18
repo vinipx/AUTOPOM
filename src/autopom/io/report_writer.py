@@ -12,9 +12,12 @@ class ReportWriter:
         self.report_dir.mkdir(parents=True, exist_ok=True)
 
     def write_summary(self, pages: list[PageModel]) -> Path:
-        total_elements = sum(len(section.elements) for p in pages for section in p.sections)
+        total_elements = sum(
+            len(section.elements) for p in pages for section in p.sections
+        )
         avg_confidence = (
-            sum(e.confidence for p in pages for s in p.sections for e in s.elements) / total_elements
+            sum(e.confidence for p in pages for s in p.sections for e in s.elements)
+            / total_elements
             if total_elements
             else 0.0
         )

@@ -11,8 +11,12 @@ class TestPoliciesAndState(unittest.TestCase):
         self.assertEqual(normalized, "https://example.com/path?a=1&b=2")
 
     def test_same_origin_and_denied_domain(self) -> None:
-        self.assertTrue(same_origin("https://app.example.com", "https://app.example.com/page"))
-        self.assertFalse(same_origin("https://app.example.com", "https://other.example.com/page"))
+        self.assertTrue(
+            same_origin("https://app.example.com", "https://app.example.com/page")
+        )
+        self.assertFalse(
+            same_origin("https://app.example.com", "https://other.example.com/page")
+        )
 
         denied = ["facebook.com", "twitter.com"]
         self.assertTrue(is_denied_domain("https://m.facebook.com/foo", denied))

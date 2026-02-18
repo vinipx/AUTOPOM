@@ -31,7 +31,11 @@ class TestOrchestratorIntegration(unittest.TestCase):
             self.assertTrue((output_dir / "java" / "pages" / "LoginPage.java").exists())
             self.assertTrue((output_dir / "models_json" / "LoginPage.json").exists())
 
-            login_page_json = json.loads((output_dir / "models_json" / "LoginPage.json").read_text(encoding="utf-8"))
+            login_page_json = json.loads(
+                (output_dir / "models_json" / "LoginPage.json").read_text(
+                    encoding="utf-8"
+                )
+            )
             self.assertEqual(login_page_json["page_name"], "LoginPage")
             self.assertEqual(len(login_page_json["actions"]), 1)
             self.assertEqual(login_page_json["actions"][0]["name"], "login")

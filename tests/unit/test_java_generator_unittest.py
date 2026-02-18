@@ -29,7 +29,7 @@ class TestJavaGenerator(unittest.TestCase):
                             type="button",
                             role="button",
                             semantic_label="Sign In",
-                            selector="button:has-text(\"Sign In\")",
+                            selector='button:has-text("Sign In")',
                         ),
                     ],
                 )
@@ -61,7 +61,10 @@ class TestJavaGenerator(unittest.TestCase):
             page_content = page_path.read_text(encoding="utf-8")
             self.assertIn("package com.example.autopom.pages;", page_content)
             self.assertIn("private final Locator usernameInput;", page_content)
-            self.assertIn('this.signInButton = locator("button:has-text(\\"Sign In\\")");', page_content)
+            self.assertIn(
+                'this.signInButton = locator("button:has-text(\\"Sign In\\")");',
+                page_content,
+            )
             self.assertIn("public LoginPage login(String username)", page_content)
             self.assertIn("signInButton.click();", page_content)
 

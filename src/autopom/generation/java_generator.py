@@ -18,7 +18,9 @@ class JavaGeneratorConfig:
 
 
 class JavaGenerator:
-    def __init__(self, output_dir: Path, template_dir: Path, config: JavaGeneratorConfig) -> None:
+    def __init__(
+        self, output_dir: Path, template_dir: Path, config: JavaGeneratorConfig
+    ) -> None:
         self.output_dir = output_dir
         self.template_dir = template_dir
         self.config = config
@@ -32,10 +34,15 @@ class JavaGenerator:
 
     def generate_page(self, page: PageModel) -> Path:
         flattened = [e for section in page.sections for e in section.elements]
-        elements = [{"field_name": _to_field_name(e.element_id), "selector": e.selector} for e in flattened]
+        elements = [
+            {"field_name": _to_field_name(e.element_id), "selector": e.selector}
+            for e in flattened
+        ]
         methods = self._build_methods(page)
         target = self.output_dir / "java" / "pages" / f"{page.page_name}.java"
-        target.write_text(self._render_page(page.page_name, elements, methods), encoding="utf-8")
+        target.write_text(
+            self._render_page(page.page_name, elements, methods), encoding="utf-8"
+        )
         return target
 
     def _build_methods(self, page: PageModel) -> list[dict]:
@@ -47,7 +54,9 @@ class JavaGenerator:
                 if rendered:
                     body.append(rendered)
             if action.post_condition:
-                body.append(f"// TODO: validate post-condition: {action.post_condition}")
+                body.append(
+                    f"// TODO: validate post-condition: {action.post_condition}"
+                )
             body.append("return this;")
             method = {
                 "return_type": page.page_name,
@@ -86,7 +95,9 @@ class JavaGenerator:
             "}\n"
         )
 
-    def _render_page(self, page_name: str, elements: list[dict], methods: list[dict]) -> str:
+    def _render_page(
+        self, page_name: str, elements: list[dict], methods: list[dict]
+    ) -> str:
         p = self.config.base_package
         lines: list[str] = [
             f"package {p}.pages;",
@@ -108,13 +119,17 @@ class JavaGenerator:
         )
         for element in elements:
             selector = element["selector"].replace('"', '\\"')
-            lines.append(f'        this.{element["field_name"]} = locator("{selector}");')
+            lines.append(
+                f'        this.{element["field_name"]} = locator("{selector}");'
+            )
         lines.append("    }")
         lines.append("")
 
         for method in methods:
             params = method["params"]
-            lines.append(f"    public {method['return_type']} {method['name']}({params}) " + "{")
+            lines.append(
+                f"    public {method['return_type']} {method['name']}({params}) " + "{"
+            )
             for stmt in method["body"]:
                 lines.append(f"        {stmt}")
             lines.append("    }")

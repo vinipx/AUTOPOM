@@ -37,7 +37,9 @@ class AutoPomOrchestrator:
 
         self.persistence = Persistence(config.output_dir)
         self.reporter = ReportWriter(config.output_dir)
-        template_dir = Path(__file__).resolve().parents[1] / "generation" / "java_templates"
+        template_dir = (
+            Path(__file__).resolve().parents[1] / "generation" / "java_templates"
+        )
         self.java_generator = JavaGenerator(
             output_dir=config.output_dir,
             template_dir=template_dir,
@@ -101,7 +103,13 @@ class AutoPomOrchestrator:
             semantic_name = self._semantic_name_from_label(label, role)
             selector = e.get("selector", "")
             fallbacks = self._fallback_selectors(selector, label)
-            el_type = "button" if role == "button" else "input" if role == "textbox" else "link"
+            el_type = (
+                "button"
+                if role == "button"
+                else "input"
+                if role == "textbox"
+                else "link"
+            )
             elements.append(
                 ElementModel(
                     element_id=semantic_name,
@@ -124,7 +132,9 @@ class AutoPomOrchestrator:
             sections=[SectionModel(name="mainContent", elements=elements)],
             actions=actions,
             discovered_links=dom_summary.get("links", []),
-            next_navigation_hints=["Continue crawl for newly discovered same-origin pages."],
+            next_navigation_hints=[
+                "Continue crawl for newly discovered same-origin pages."
+            ],
         )
 
     @staticmethod
@@ -137,7 +147,9 @@ class AutoPomOrchestrator:
     @staticmethod
     def _semantic_name_from_label(label: str, role: str) -> str:
         normalized = "".join(ch for ch in label.title() if ch.isalnum())
-        suffix = "Button" if role == "button" else "Input" if role == "textbox" else "Link"
+        suffix = (
+            "Button" if role == "button" else "Input" if role == "textbox" else "Link"
+        )
         if normalized.lower() in {"x", "close"}:
             normalized = "CloseModal"
             suffix = "Button"
@@ -179,7 +191,9 @@ class AutoPomOrchestrator:
             absolute = urljoin(self.config.base_url, link)
             if not self._is_allowed(absolute):
                 continue
-            self.state.enqueue(FrontierItem(url=absolute, depth=depth, via_action="discover_link"))
+            self.state.enqueue(
+                FrontierItem(url=absolute, depth=depth, via_action="discover_link")
+            )
 
     def _is_allowed(self, url: str) -> bool:
         if is_denied_domain(url, self.config.denied_domains):

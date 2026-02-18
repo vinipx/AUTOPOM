@@ -13,7 +13,9 @@ class FakeVisibilityBrowser:
 
 
 class TestSelectorVerifier(unittest.TestCase):
-    def _build_page(self, selector: str, fallbacks: list[str], confidence: float = 0.8) -> PageModel:
+    def _build_page(
+        self, selector: str, fallbacks: list[str], confidence: float = 0.8
+    ) -> PageModel:
         element = ElementModel(
             element_id="exampleButton",
             type="button",
@@ -43,7 +45,9 @@ class TestSelectorVerifier(unittest.TestCase):
         self.assertAlmostEqual(element.confidence, 0.85, places=6)
 
     def test_promotes_first_visible_fallback(self) -> None:
-        page = self._build_page("button.missing", ["text=Example", "[data-testid='example']"])
+        page = self._build_page(
+            "button.missing", ["text=Example", "[data-testid='example']"]
+        )
         verifier = SelectorVerifier(FakeVisibilityBrowser({"[data-testid='example']"}))
 
         verifier.verify_and_heal(page)
