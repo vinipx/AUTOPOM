@@ -65,7 +65,7 @@ jobs:
         working-directory: docs
         run: |
           export DOCS_URL="${DOCS_URL:-https://vinipx.github.io}"
-          export DOCS_BASE_URL="${DOCS_BASE_URL:-/elementor/}"
+          export DOCS_BASE_URL="${DOCS_BASE_URL:-/AUTOPOM/}"
           npm run build
 
   deploy-docs:
@@ -100,7 +100,7 @@ jobs:
         working-directory: docs
         run: |
           export DOCS_URL="${DOCS_URL:-https://vinipx.github.io}"
-          export DOCS_BASE_URL="${DOCS_BASE_URL:-/elementor/}"
+          export DOCS_BASE_URL="${DOCS_BASE_URL:-/AUTOPOM/}"
           npm run build
 
       - name: Setup Pages

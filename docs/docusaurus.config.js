@@ -8,10 +8,10 @@ const config = {
   favicon: 'img/logo.svg',
 
   url: process.env.DOCS_URL || 'https://vinipx.github.io',
-  baseUrl: process.env.DOCS_BASE_URL || '/elementor/',
+  baseUrl: process.env.DOCS_BASE_URL || '/AUTOPOM/',
 
   organizationName: 'vinipx',
-  projectName: 'elementor',
+  projectName: 'AUTOPOM',
   trailingSlash: false,
 
   onBrokenLinks: 'throw',
@@ -36,7 +36,7 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          editUrl: 'https://github.com/vinipx/elementor/tree/main/docs/',
+          editUrl: 'https://github.com/vinipx/AUTOPOM/tree/main/docs/',
           showLastUpdateTime: true,
         },
         blog: false,
@@ -166,7 +166,7 @@ const config = {
             ],
           },
           {
-            href: 'https://github.com/vinipx/elementor',
+            href: 'https://github.com/vinipx/AUTOPOM',
             label: 'GitHub',
             position: 'right',
           },
@@ -203,7 +203,7 @@ const config = {
           {
             title: 'Links',
             items: [
-              { label: 'GitHub', href: 'https://github.com/vinipx/elementor' },
+              { label: 'GitHub', href: 'https://github.com/vinipx/AUTOPOM' },
               { label: 'Contributing', to: '/docs/contributing/guidelines' },
             ],
           },

@@ -73,7 +73,7 @@ AUTOPOM_USERNAME=demo_user
 AUTOPOM_PASSWORD=demo_password
 AUTOPOM_BASE_URL=https://example.com
 DOCS_URL=https://vinipx.github.io
-DOCS_BASE_URL=/elementor/
+DOCS_BASE_URL=/AUTOPOM/
 EOF
     return
   fi
@@ -90,7 +90,7 @@ EOF
   ensure_key "AUTOPOM_PASSWORD" "demo_password"
   ensure_key "AUTOPOM_BASE_URL" "https://example.com"
   ensure_key "DOCS_URL" "https://vinipx.github.io"
-  ensure_key "DOCS_BASE_URL" "/elementor/"
+  ensure_key "DOCS_BASE_URL" "/AUTOPOM/"
 }
 
 bootstrap_python() {
