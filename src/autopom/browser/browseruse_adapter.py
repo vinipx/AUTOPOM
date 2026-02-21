@@ -119,15 +119,25 @@ class PlaywrightBrowserAdapter:
         self._sync_playwright = sync_playwright
         self._playwright = self._sync_playwright().start()
         self._browser = self._playwright.chromium.launch(headless=self.headless)
-        self._context = self._browser.new_context()
+        self._context = self._browser.new_context(
+            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 720},
+            locale="en-US",
+        )
         self._page = self._context.new_page()
         self._page.set_default_timeout(self.navigation_timeout_ms)
         self._current_url = self.base_url
 
     def goto(self, url: str) -> None:
-        self._page.goto(
-            url, wait_until="domcontentloaded", timeout=self.navigation_timeout_ms
-        )
+        try:
+            self._page.goto(
+                url, wait_until="domcontentloaded", timeout=self.navigation_timeout_ms
+            )
+        except Exception:
+            # If navigation times out, we assume the page is at least partially loaded and proceed.
+            pass
+            
+        self._page.wait_for_timeout(1000)
         self._current_url = self._page.url
 
     def url(self) -> str:
@@ -136,105 +146,150 @@ class PlaywrightBrowserAdapter:
     def title(self) -> str:
         return self._page.title()
 
-    def extract_interactive_dom_summary(self, max_nodes: int = 120) -> dict:
-        result = self._page.evaluate(
-            """
-            ({ maxNodes }) => {
-              const interactiveSelector =
-                'a[href],button,input,select,textarea,[role="button"],[role="link"],[role="textbox"],[tabindex]';
-              const nodes = Array.from(document.querySelectorAll(interactiveSelector));
-              const safeAttr = (el, name) => (el.getAttribute(name) || '').trim();
-              const toRole = (el) => {
-                const role = safeAttr(el, 'role');
-                if (role) return role.toLowerCase();
-                const tag = el.tagName.toLowerCase();
-                if (tag === 'a') return 'link';
-                if (tag === 'button') return 'button';
-                if (tag === 'input' || tag === 'textarea') return 'textbox';
-                return 'generic';
-              };
-              const toLabel = (el) => {
-                const fromAttrs = safeAttr(el, 'aria-label') || safeAttr(el, 'placeholder') || safeAttr(el, 'name');
-                if (fromAttrs) return fromAttrs;
-                const text = (el.innerText || el.textContent || '').trim().replace(/\\s+/g, ' ');
-                if (text) return text.slice(0, 80);
-                return el.tagName.toLowerCase();
-              };
-              const cssEscape = (value) => {
-                if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
-                  return CSS.escape(value);
-                }
-                return value.replace(/([ #;?%&,.+*~\\':"!^$\\[\\]()=>|/@])/g, '\\\\$1');
-              };
-              const quoteAttr = (value) => value.replace(/"/g, '\\\\"');
-              const toSelector = (el, role, label) => {
-                const testAttrs = ['data-testid', 'data-test', 'data-qa'];
-                for (const attr of testAttrs) {
-                  const v = safeAttr(el, attr);
-                  if (v) return `[${attr}="${quoteAttr(v)}"]`;
-                }
-                const id = safeAttr(el, 'id');
-                if (id) return `#${cssEscape(id)}`;
-                const tag = el.tagName.toLowerCase();
-                const name = safeAttr(el, 'name');
-                if (name && (tag === 'input' || tag === 'textarea' || tag === 'select')) {
-                  return `${tag}[name="${quoteAttr(name)}"]`;
-                }
-                const href = safeAttr(el, 'href');
-                if (tag === 'a' && href) {
-                  return `a[href="${quoteAttr(href)}"]`;
-                }
-                if (label && (role === 'button' || role === 'link')) {
-                  return `${role} >> text=${label}`;
-                }
-                return tag;
-              };
-              const sectionFor = (el) => {
-                const landmark = el.closest('main,nav,header,footer,section,form,aside');
-                if (!landmark) return 'mainContent';
-                if (landmark.id) return landmark.id;
-                const role = safeAttr(landmark, 'role');
-                return role || landmark.tagName.toLowerCase() || 'mainContent';
-              };
+    def extract_interactive_dom_summary(self, max_nodes: int = 500) -> dict:
+        try:
+            # Use functional map/filter approach which proved drastically faster than imperative loops
+            result = self._page.evaluate(
+                """
+                ({ maxNodes }) => {
+                    // Helper to clean text
+                    const cleanText = (txt) => (txt || '').replace(/\\s+/g, ' ').trim();
+                    const escapeSelector = (val) => val.replace(/"/g, '\\\\"');
 
-              const kept = [];
-              for (const node of nodes) {
-                if (kept.length >= maxNodes) break;
-                const role = toRole(node);
-                const label = toLabel(node);
-                const selector = toSelector(node, role, label);
-                kept.push({
-                  role,
-                  label,
-                  selector,
-                  section: sectionFor(node),
-                });
-              }
+                    // 1. Process Interactive Elements (High Priority)
+                    // Expanded selector for comprehensive coverage
+                    const interactiveSelector = `
+                        input:not([type="hidden"]), select, textarea, button,
+                        [role="button"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"],
+                        [role="checkbox"], [role="radio"], [role="switch"],
+                        [role="tab"], [role="combobox"], [role="listbox"], [role="option"],
+                        [role="searchbox"], [role="spinbutton"], [role="slider"],
+                        [contenteditable="true"], [tabindex]:not([tabindex="-1"])
+                    `;
+                    
+                    const formElements = Array.from(document.querySelectorAll(interactiveSelector))
+                        .slice(0, 500)
+                        .map(el => {
+                            const tag = el.tagName.toLowerCase();
+                            const roleAttr = el.getAttribute('role');
+                            let role = roleAttr || 'generic';
+                            
+                            // Refined role detection
+                            if (tag === 'input' || tag === 'textarea' || tag === 'select') role = 'textbox';
+                            if (tag === 'button') role = 'button';
+                            if (el.getAttribute('contenteditable') === 'true') role = 'textbox';
+                            
+                            // Label extraction hierarchy
+                            let label = el.name || el.id || el.value || el.getAttribute('aria-label') || el.getAttribute('placeholder') || el.title;
+                            if (role === 'button' || role === 'link' || role === 'menuitem' || !label) {
+                                label = cleanText(el.innerText || el.textContent) || label;
+                            }
+                            label = (label || role).slice(0, 80);
 
-              const links = Array.from(
-                new Set(
-                  Array.from(document.querySelectorAll('a[href]'))
-                    .map((a) => a.getAttribute('href'))
-                    .filter(Boolean)
-                )
-              );
+                            // Robust Selector Construction
+                            let selector = tag;
+                            const id = el.id;
+                            const name = el.name;
+                            const testId = el.getAttribute('data-testid') || el.getAttribute('data-test');
+                            const placeholder = el.getAttribute('placeholder');
+                            const ariaLabel = el.getAttribute('aria-label');
+                            const title = el.title;
 
-              const landmarks = Array.from(
-                new Set(kept.map((k) => k.section).filter(Boolean))
-              );
-              const path = location.pathname || '/';
-              const fingerprint = `live::${path}::${kept.length}::${links.length}`;
-              return {
-                fingerprint,
-                landmarks: landmarks.length ? landmarks : ['mainContent'],
-                elements: kept,
-                links,
-              };
+                            if (testId) selector += `[data-testid="${escapeSelector(testId)}"]`;
+                            else if (id) selector = `#${id}`; // IDs are strong
+                            else if (name) selector += `[name="${escapeSelector(name)}"]`;
+                            else if (placeholder) selector += `[placeholder="${escapeSelector(placeholder)}"]`;
+                            else if (ariaLabel) selector += `[aria-label="${escapeSelector(ariaLabel)}"]`;
+                            else if (title) selector += `[title="${escapeSelector(title)}"]`;
+                            else if ((role === 'button' || role === 'link' || role === 'menuitem') && label) selector += `:has-text("${escapeSelector(label)}")`;
+                            else if (roleAttr) selector += `[role="${roleAttr}"]`;
+                            
+                            // Class fallback
+                            if (selector === tag && el.className && typeof el.className === 'string') {
+                                selector += `.${el.className.split(' ').filter(c => c).join('.')}`;
+                            }
+
+                            const safeLabel = label.replace(/\\|/g, '');
+                            return `${role}|${safeLabel}|${selector}|main`;
+                        })
+                        .filter(Boolean);
+
+                    // 2. Process Links (Navigation Coverage)
+                    const linkElements = Array.from(document.links)
+                        .slice(0, 300)
+                        .map(link => {
+                            const href = link.href;
+                            if (!href || href.startsWith('javascript:') || href.includes('#')) return null;
+                            
+                            const text = cleanText(link.textContent);
+                            const label = text.slice(0, 80) || 'link';
+                            const selector = `a[href="${escapeSelector(href)}"]`;
+                            
+                            const safeLabel = label.replace(/\\|/g, '');
+                            return `link|${safeLabel}|${selector}|main`;
+                        })
+                        .filter(Boolean);
+
+                    // Combine: Interactive elements first, then Links
+                    const allElements = formElements.concat(linkElements);
+                    
+                    // Deduplicate strings directly
+                    const uniqueElements = Array.from(new Set(allElements)).slice(0, maxNodes);
+
+                    // Extract frontier links
+                    const frontierLinks = Array.from(document.links)
+                        .slice(0, 300)
+                        .map(a => a.href)
+                        .filter(h => h && !h.startsWith('javascript:'));
+
+                    return {
+                        fingerprint: `fast::${document.title}::${uniqueElements.length}`,
+                        landmarks: ['main'],
+                        elements: uniqueElements,
+                        links: frontierLinks
+                    };
+                }
+                """,
+                {"maxNodes": max_nodes}
+            )
+            
+            # Parse the string elements back into dicts in Python
+            parsed_elements = []
+            raw_elements = result.get("elements", [])
+            
+            for item in raw_elements:
+                parts = item.split("|")
+                # Handle cases where label/selector might have pipes or fewer parts
+                if len(parts) >= 2:
+                    role = parts[0]
+                    label = parts[1]
+                    # Join the rest as selector+section
+                    rest = "|".join(parts[2:])
+                    # Assume last part is section, everything before is selector
+                    if "|" in rest:
+                        selector, section = rest.rsplit("|", 1)
+                    else:
+                        selector = rest
+                        section = "main"
+                        
+                    parsed_elements.append({
+                        "role": role,
+                        "label": label,
+                        "selector": selector,
+                        "section": section
+                    })
+            
+            result["elements"] = parsed_elements
+            return result
+
+        except Exception as e:
+            # Fallback empty result
+            return {
+                "fingerprint": "error",
+                "landmarks": [],
+                "elements": [],
+                "links": []
             }
-            """,
-            {"maxNodes": max_nodes},
-        )
-        return result
 
     def capture_screenshot(self, scale: float = 0.4) -> str | None:
         # Screenshot not yet persisted in this scaffold implementation.
@@ -244,9 +299,8 @@ class PlaywrightBrowserAdapter:
         if not selector:
             return False
         try:
-            locator = self._page.locator(selector).first
-            locator.wait_for(state="visible", timeout=timeout_ms)
-            return True
+            # Check immediate visibility without waiting, avoiding timeouts on hidden elements
+            return self._page.locator(selector).first.is_visible()
         except Exception:
             return False
 

@@ -58,6 +58,7 @@ class AutoPomOrchestrator:
         self.pom_generator = PlaywrightPomGenerator(
             output_dir=config.output_dir,
             language=config.pom_language,
+            locator_storage=config.locator_storage,
             template_dir=template_dir,
             java_config=JavaGeneratorConfig(),
         )
@@ -98,7 +99,8 @@ class AutoPomOrchestrator:
                 continue
 
             self.browser.goto(current.url)
-            dom_summary = self.browser.extract_interactive_dom_summary(max_nodes=120)
+            # Increased max_nodes to 500 to ensure full coverage of complex pages
+            dom_summary = self.browser.extract_interactive_dom_summary(max_nodes=500)
             signature = self.state.make_signature(
                 normalized_url=normalize_url(self.browser.url()),
                 dom_fingerprint=dom_summary.get("fingerprint", ""),

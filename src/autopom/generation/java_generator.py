@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import json
 from pathlib import Path
 import re
 
@@ -18,6 +19,7 @@ class JavaGeneratorConfig:
 
 
 SUPPORTED_POM_LANGUAGES = ("java", "javascript", "typescript")
+SUPPORTED_LOCATOR_STORAGE = ("inline", "external")
 
 
 def normalize_pom_language(language: str) -> str:
@@ -30,22 +32,37 @@ def normalize_pom_language(language: str) -> str:
     return normalized
 
 
+def normalize_locator_storage(locator_storage: str) -> str:
+    normalized = locator_storage.strip().lower()
+    aliases = {"ext": "external"}
+    normalized = aliases.get(normalized, normalized)
+    if normalized not in SUPPORTED_LOCATOR_STORAGE:
+        allowed = ", ".join(SUPPORTED_LOCATOR_STORAGE)
+        raise ValueError(
+            f"Unsupported locator storage '{locator_storage}'. Allowed: {allowed}."
+        )
+    return normalized
+
+
 class PlaywrightPomGenerator:
     def __init__(
         self,
         output_dir: Path,
         language: str,
-        template_dir: Path | None,
+        locator_storage: str = "inline",
+        template_dir: Path | None = None,
         java_config: JavaGeneratorConfig | None = None,
     ) -> None:
         self.output_dir = output_dir
         self.language = normalize_pom_language(language)
+        self.locator_storage = normalize_locator_storage(locator_storage)
         self.template_dir = template_dir
         self.config = java_config or JavaGeneratorConfig()
 
         language_dir = self.output_dir / self.language
         (language_dir / "pages").mkdir(parents=True, exist_ok=True)
         (language_dir / "base").mkdir(parents=True, exist_ok=True)
+        (language_dir / "locators").mkdir(parents=True, exist_ok=True)
 
     @property
     def file_extension(self) -> str:
@@ -60,6 +77,8 @@ class PlaywrightPomGenerator:
             self.output_dir / self.language / "base" / f"BasePage{self.file_extension}"
         )
         target.write_text(self._render_base_page(), encoding="utf-8")
+        if self.locator_storage == "external":
+            self._generate_locator_finder()
         return target
 
     def generate_page(self, page: PageModel) -> Path:
@@ -75,6 +94,8 @@ class PlaywrightPomGenerator:
             / "pages"
             / f"{page.page_name}{self.file_extension}"
         )
+        if self.locator_storage == "external":
+            self._write_external_locators(page.page_name, elements)
         target.write_text(
             self._render_page(page.page_name, elements, methods), encoding="utf-8"
         )
@@ -193,20 +214,32 @@ class PlaywrightPomGenerator:
             "",
             f"public class {page_name} extends BasePage " + "{",
         ]
+        if self.locator_storage == "external":
+            lines.insert(3, f"import {p}.base.LocatorFinder;")
         for element in elements:
             lines.append(f"    private final Locator {element['field_name']};")
         lines.extend(
             [
                 "",
-                f"    public {page_name}(Page page) " + "{",
+                (
+                    f"    public {page_name}(Page page, LocatorFinder locatorFinder) "
+                    + "{"
+                    if self.locator_storage == "external"
+                    else f"    public {page_name}(Page page) " + "{"
+                ),
                 "        super(page);",
             ]
         )
         for element in elements:
-            selector = element["selector"].replace('"', '\\"')
-            lines.append(
-                f'        this.{element["field_name"]} = locator("{selector}");'
-            )
+            if self.locator_storage == "external":
+                lines.append(
+                    f'        this.{element["field_name"]} = locator(locatorFinder.get("{element["field_name"]}"));'
+                )
+            else:
+                selector = element["selector"].replace('"', '\\"')
+                lines.append(
+                    f'        this.{element["field_name"]} = locator("{selector}");'
+                )
         lines.append("    }")
         lines.append("")
 
@@ -230,18 +263,30 @@ class PlaywrightPomGenerator:
     def _render_javascript_page(
         self, page_name: str, elements: list[dict], methods: list[dict]
     ) -> str:
-        lines: list[str] = [
-            'const { BasePage } = require("../base/BasePage");',
-            "",
-            f"class {page_name} extends BasePage " + "{",
-            "  constructor(page) {",
-            "    super(page);",
-        ]
-        for element in elements:
-            selector = self._escape_selector(element["selector"])
-            lines.append(
-                f'    this.{element["field_name"]} = this.locator("{selector}");'
+        lines: list[str] = ['const { BasePage } = require("../base/BasePage");']
+        if self.locator_storage == "external":
+            lines.append('const { LocatorFinder } = require("../base/locatorFinder");')
+        lines.extend(["", f"class {page_name} extends BasePage " + "{"])
+        if self.locator_storage == "external":
+            lines.extend(
+                [
+                    "  constructor(page, locatorFinder) {",
+                    "    super(page);",
+                    f'    const finder = locatorFinder || new LocatorFinder(process.cwd() + "/{self.language}/locators", "{page_name}");',
+                ]
             )
+        else:
+            lines.extend(["  constructor(page) {", "    super(page);"])
+        for element in elements:
+            if self.locator_storage == "external":
+                lines.append(
+                    f'    this.{element["field_name"]} = this.locator(finder.get("{element["field_name"]}"));'
+                )
+            else:
+                selector = self._escape_selector(element["selector"])
+                lines.append(
+                    f'    this.{element["field_name"]} = this.locator("{selector}");'
+                )
         lines.extend(["  }", ""])
 
         for method in methods:
@@ -258,21 +303,35 @@ class PlaywrightPomGenerator:
     def _render_typescript_page(
         self, page_name: str, elements: list[dict], methods: list[dict]
     ) -> str:
-        lines: list[str] = [
-            'import { Locator, Page } from "@playwright/test";',
-            'import { BasePage } from "../base/BasePage";',
-            "",
-            f"export class {page_name} extends BasePage " + "{",
-        ]
+        lines: list[str] = ['import { Locator, Page } from "@playwright/test";']
+        lines.append('import { BasePage } from "../base/BasePage";')
+        if self.locator_storage == "external":
+            lines.append('import { LocatorFinder } from "../base/LocatorFinder";')
+        lines.extend(["", f"export class {page_name} extends BasePage " + "{"])
         for element in elements:
             lines.append(f"  private readonly {element['field_name']}: Locator;")
-        lines.extend(["", "  constructor(page: Page) {", "    super(page);"])
+        if self.locator_storage == "external":
+            lines.extend(
+                [
+                    "",
+                    "  constructor(page: Page, locatorFinder?: LocatorFinder) {",
+                    "    super(page);",
+                    f'    const finder = locatorFinder ?? new LocatorFinder(`${{process.cwd()}}/{self.language}/locators`, "{page_name}");',
+                ]
+            )
+        else:
+            lines.extend(["", "  constructor(page: Page) {", "    super(page);"])
 
         for element in elements:
-            selector = self._escape_selector(element["selector"])
-            lines.append(
-                f'    this.{element["field_name"]} = this.locator("{selector}");'
-            )
+            if self.locator_storage == "external":
+                lines.append(
+                    f'    this.{element["field_name"]} = this.locator(finder.get("{element["field_name"]}"));'
+                )
+            else:
+                selector = self._escape_selector(element["selector"])
+                lines.append(
+                    f'    this.{element["field_name"]} = this.locator("{selector}");'
+                )
         lines.extend(["  }", ""])
 
         for method in methods:
@@ -288,6 +347,120 @@ class PlaywrightPomGenerator:
         lines.append("}")
         return "\n".join(lines)
 
+    def _write_external_locators(self, page_name: str, elements: list[dict]) -> Path:
+        locators_dir = self.output_dir / self.language / "locators"
+        if self.language == "java":
+            target = locators_dir / f"{page_name}.properties"
+            lines = []
+            for element in elements:
+                selector = (
+                    element["selector"]
+                    .replace("\\", "\\\\")
+                    .replace("\n", "\\n")
+                    .replace("=", "\\=")
+                    .replace(":", "\\:")
+                )
+                lines.append(f"{element['field_name']}={selector}")
+            target.write_text(
+                "\n".join(lines) + ("\n" if lines else ""), encoding="utf-8"
+            )
+            return target
+
+        target = locators_dir / f"{page_name}.json"
+        payload = {element["field_name"]: element["selector"] for element in elements}
+        target.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        return target
+
+    def _generate_locator_finder(self) -> Path:
+        base_dir = self.output_dir / self.language / "base"
+        if self.language == "java":
+            target = base_dir / "LocatorFinder.java"
+            p = self.config.base_package
+            target.write_text(
+                (
+                    f"package {p}.base;\n\n"
+                    "import java.io.IOException;\n"
+                    "import java.io.InputStream;\n"
+                    "import java.nio.file.Files;\n"
+                    "import java.nio.file.Path;\n"
+                    "import java.util.Properties;\n\n"
+                    "public final class LocatorFinder {\n"
+                    "    private final Properties props;\n\n"
+                    "    private LocatorFinder(Properties props) {\n"
+                    "        this.props = props;\n"
+                    "    }\n\n"
+                    "    public static LocatorFinder forPage(Path locatorRoot, String pageName) {\n"
+                    "        Properties props = new Properties();\n"
+                    '        Path source = locatorRoot.resolve(pageName + ".properties");\n'
+                    "        try (InputStream in = Files.newInputStream(source)) {\n"
+                    "            props.load(in);\n"
+                    "        } catch (IOException ex) {\n"
+                    '            throw new IllegalStateException("Unable to load locator file: " + source, ex);\n'
+                    "        }\n"
+                    "        return new LocatorFinder(props);\n"
+                    "    }\n\n"
+                    "    public String get(String key) {\n"
+                    "        String value = props.getProperty(key);\n"
+                    "        if (value == null || value.isBlank()) {\n"
+                    '            throw new IllegalArgumentException("Missing locator key: " + key);\n'
+                    "        }\n"
+                    "        return value;\n"
+                    "    }\n"
+                    "}\n"
+                ),
+                encoding="utf-8",
+            )
+            return target
+
+        if self.language == "javascript":
+            target = base_dir / "locatorFinder.js"
+            target.write_text(
+                (
+                    "const fs = require('fs');\n"
+                    "const path = require('path');\n\n"
+                    "class LocatorFinder {\n"
+                    "  constructor(locatorRoot, pageName) {\n"
+                    "    const source = path.join(locatorRoot, `${pageName}.json`);\n"
+                    "    this.locators = JSON.parse(fs.readFileSync(source, 'utf-8'));\n"
+                    "  }\n\n"
+                    "  get(key) {\n"
+                    "    const value = this.locators[key];\n"
+                    "    if (!value) {\n"
+                    "      throw new Error(`Missing locator key: ${key}`);\n"
+                    "    }\n"
+                    "    return value;\n"
+                    "  }\n"
+                    "}\n\n"
+                    "module.exports = { LocatorFinder };\n"
+                ),
+                encoding="utf-8",
+            )
+            return target
+
+        target = base_dir / "LocatorFinder.ts"
+        target.write_text(
+            (
+                'import fs from "fs";\n'
+                'import path from "path";\n\n'
+                "export class LocatorFinder {\n"
+                "  private readonly locators: Record<string, string>;\n\n"
+                "  constructor(locatorRoot: string, pageName: string) {\n"
+                "    const source = path.join(locatorRoot, `${pageName}.json`);\n"
+                "    this.locators = JSON.parse(fs.readFileSync(source, 'utf-8')) as Record<string, string>;\n"
+                "  }\n\n"
+                "  get(key: string): string {\n"
+                "    const value = this.locators[key];\n"
+                "    if (!value) {\n"
+                "      throw new Error(`Missing locator key: ${key}`);\n"
+                "    }\n"
+                "    return value;\n"
+                "  }\n"
+                "}\n"
+            ),
+            encoding="utf-8",
+        )
+        return target
+
 
 class JavaGenerator(PlaywrightPomGenerator):
     def __init__(
@@ -296,6 +469,7 @@ class JavaGenerator(PlaywrightPomGenerator):
         super().__init__(
             output_dir=output_dir,
             language="java",
+            locator_storage="inline",
             template_dir=template_dir,
             java_config=config,
         )

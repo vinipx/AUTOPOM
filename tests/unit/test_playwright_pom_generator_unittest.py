@@ -97,6 +97,50 @@ class TestPlaywrightPomGenerator(unittest.TestCase):
             )
             self.assertIn("await this.signInButton.click()", page_content)
 
+    def test_generates_external_java_locators_with_locator_finder(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+            generator = PlaywrightPomGenerator(
+                output_dir=output_dir,
+                language="java",
+                locator_storage="external",
+                template_dir=Path("unused"),
+            )
+
+            generator.generate_base_page()
+            page_path = generator.generate_page(_sample_page())
+
+            locator_file = output_dir / "java" / "locators" / "LoginPage.properties"
+            finder_file = output_dir / "java" / "base" / "LocatorFinder.java"
+            self.assertTrue(locator_file.exists())
+            self.assertTrue(finder_file.exists())
+
+            page_content = page_path.read_text(encoding="utf-8")
+            self.assertIn("LocatorFinder locatorFinder", page_content)
+            self.assertIn('locatorFinder.get("usernameInput")', page_content)
+
+    def test_generates_external_typescript_locators_with_locator_finder(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+            generator = PlaywrightPomGenerator(
+                output_dir=output_dir,
+                language="typescript",
+                locator_storage="external",
+                template_dir=Path("unused"),
+            )
+
+            generator.generate_base_page()
+            page_path = generator.generate_page(_sample_page())
+
+            locator_file = output_dir / "typescript" / "locators" / "LoginPage.json"
+            finder_file = output_dir / "typescript" / "base" / "LocatorFinder.ts"
+            self.assertTrue(locator_file.exists())
+            self.assertTrue(finder_file.exists())
+
+            page_content = page_path.read_text(encoding="utf-8")
+            self.assertIn("locatorFinder?: LocatorFinder", page_content)
+            self.assertIn('finder.get("usernameInput")', page_content)
+
     def test_crawl_config_normalizes_language_aliases(self) -> None:
         cfg = CrawlConfig(base_url="https://example.com", pom_language="ts")
         self.assertEqual(cfg.pom_language, "typescript")
@@ -107,6 +151,10 @@ class TestPlaywrightPomGenerator(unittest.TestCase):
     def test_invalid_pom_language_raises_value_error(self) -> None:
         with self.assertRaises(ValueError):
             CrawlConfig(base_url="https://example.com", pom_language="ruby")
+
+    def test_invalid_locator_storage_raises_value_error(self) -> None:
+        with self.assertRaises(ValueError):
+            CrawlConfig(base_url="https://example.com", locator_storage="database")
 
 
 if __name__ == "__main__":

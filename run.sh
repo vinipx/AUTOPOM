@@ -246,11 +246,12 @@ main() {
   info "Using Python environment: ${VENV_DIR}"
   install_base_dependencies_if_needed
 
-  local base_url output_dir pom_language browser_adapter max_depth max_pages headed_flag
+  local base_url output_dir pom_language locator_storage browser_adapter max_depth max_pages headed_flag
   print_section "Run Configuration"
   base_url="$(prompt_url "https://vinipx.github.io/AUTOPOM/")"
   output_dir="$(prompt_default "Output directory" "output-live")"
   pom_language="$(choose_from_list "Choose POM output language:" 3 "java" "javascript" "typescript")"
+  locator_storage="$(choose_from_list "Choose locator storage strategy:" 2 "inline" "external")"
   browser_adapter="$(choose_from_list "Choose browser adapter:" 2 "mock" "playwright")"
   echo "Max crawl depth defines link traversal levels from the base URL."
   echo "Example: depth 1 = direct links only, depth 2 = links from those pages."
@@ -271,6 +272,7 @@ main() {
   echo "Base URL        : ${base_url}"
   echo "Output Dir      : ${output_dir}"
   echo "POM Language    : ${pom_language}"
+  echo "Locator Storage : ${locator_storage}"
   echo "Browser Adapter : ${browser_adapter}"
   echo "Max Depth       : ${max_depth}"
   echo "Max Pages       : ${max_pages}"
@@ -285,6 +287,7 @@ main() {
     --base-url "${base_url}"
     --output-dir "${output_dir}"
     --pom-language "${pom_language}"
+    --locator-storage "${locator_storage}"
     --browser-adapter "${browser_adapter}"
     --max-depth "${max_depth}"
     --max-pages "${max_pages}"

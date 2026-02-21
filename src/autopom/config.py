@@ -4,7 +4,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from autopom.browser.browseruse_adapter import normalize_browser_adapter
-from autopom.generation.java_generator import normalize_pom_language
+from autopom.generation.java_generator import (
+    normalize_locator_storage,
+    normalize_pom_language,
+)
 
 
 @dataclass(slots=True)
@@ -24,9 +27,11 @@ class CrawlConfig:
     auth_user_env: str = "AUTOPOM_USERNAME"
     auth_pass_env: str = "AUTOPOM_PASSWORD"
     pom_language: str = "java"
+    locator_storage: str = "inline"
     browser_adapter: str = "mock"
     playwright_headless: bool = True
 
     def __post_init__(self) -> None:
         self.pom_language = normalize_pom_language(self.pom_language)
+        self.locator_storage = normalize_locator_storage(self.locator_storage)
         self.browser_adapter = normalize_browser_adapter(self.browser_adapter)

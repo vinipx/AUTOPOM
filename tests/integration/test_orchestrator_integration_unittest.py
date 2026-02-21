@@ -124,6 +124,31 @@ class TestOrchestratorIntegration(unittest.TestCase):
             # Backward-compatible accessor still exposes generated POM paths.
             self.assertEqual(result.java_paths, result.pom_paths)
 
+    def test_generates_external_locator_artifacts_when_configured(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_dir = Path(tmp_dir)
+            config = CrawlConfig(
+                base_url="https://example.com",
+                output_dir=output_dir,
+                max_depth=1,
+                max_pages=2,
+                pom_language="typescript",
+                locator_storage="external",
+            )
+            orchestrator = AutoPomOrchestrator(
+                config=config,
+                browser=MockBrowserUseAdapter(base_url=config.base_url),
+            )
+
+            orchestrator.run()
+
+            self.assertTrue(
+                (output_dir / "typescript" / "locators" / "HomePage.json").exists()
+            )
+            self.assertTrue(
+                (output_dir / "typescript" / "base" / "LocatorFinder.ts").exists()
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

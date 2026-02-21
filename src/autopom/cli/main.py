@@ -12,7 +12,10 @@ from autopom.browser.browseruse_adapter import (
     create_browser_adapter,
 )
 from autopom.config import CrawlConfig
-from autopom.generation.java_generator import SUPPORTED_POM_LANGUAGES
+from autopom.generation.java_generator import (
+    SUPPORTED_LOCATOR_STORAGE,
+    SUPPORTED_POM_LANGUAGES,
+)
 
 
 def _utc_now_iso() -> str:
@@ -46,6 +49,7 @@ def _write_execution_summary(
             "base_url": config.base_url,
             "output_dir": str(config.output_dir),
             "pom_language": config.pom_language,
+            "locator_storage": config.locator_storage,
             "browser_adapter": config.browser_adapter,
             "playwright_headless": config.playwright_headless,
             "max_depth": config.max_depth,
@@ -77,6 +81,7 @@ def _write_execution_summary(
         f"- Base URL: `{payload['configuration']['base_url']}`",
         f"- Output directory: `{payload['configuration']['output_dir']}`",
         f"- POM language: `{payload['configuration']['pom_language']}`",
+        f"- Locator storage: `{payload['configuration']['locator_storage']}`",
         f"- Browser adapter: `{payload['configuration']['browser_adapter']}`",
         f"- Playwright headless: `{payload['configuration']['playwright_headless']}`",
         f"- Max depth: `{payload['configuration']['max_depth']}`",
@@ -124,6 +129,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="POM language: java, javascript, or typescript",
     )
     parser.add_argument(
+        "--locator-storage",
+        default="inline",
+        choices=SUPPORTED_LOCATOR_STORAGE,
+        help="Locator storage: inline or external",
+    )
+    parser.add_argument(
         "--browser-adapter",
         default="mock",
         choices=SUPPORTED_BROWSER_ADAPTERS,
@@ -146,6 +157,7 @@ def main() -> None:
         max_depth=args.max_depth,
         max_pages=args.max_pages,
         pom_language=args.pom_language,
+        locator_storage=args.locator_storage,
         browser_adapter=args.browser_adapter,
         playwright_headless=not args.headed,
     )

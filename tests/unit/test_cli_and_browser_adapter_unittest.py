@@ -29,17 +29,24 @@ class TestCliAndBrowserAdapter(unittest.TestCase):
             [
                 "--base-url",
                 "https://example.com",
+                "--locator-storage",
+                "external",
                 "--browser-adapter",
                 "playwright",
                 "--headed",
             ]
         )
+        self.assertEqual(args.locator_storage, "external")
         self.assertEqual(args.browser_adapter, "playwright")
         self.assertTrue(args.headed)
 
     def test_crawl_config_normalizes_browser_adapter(self) -> None:
         cfg = CrawlConfig(base_url="https://example.com", browser_adapter="pw")
         self.assertEqual(cfg.browser_adapter, "playwright")
+
+    def test_crawl_config_normalizes_locator_storage_alias(self) -> None:
+        cfg = CrawlConfig(base_url="https://example.com", locator_storage="ext")
+        self.assertEqual(cfg.locator_storage, "external")
 
 
 if __name__ == "__main__":

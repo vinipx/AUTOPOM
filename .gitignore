@@ -46,6 +46,7 @@ docs/.eslintcache
 # Generated outputs / temp
 # =========================
 output/
+output-*/
 public/
 playwright-report/
 test-results/
