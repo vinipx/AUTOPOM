@@ -136,7 +136,7 @@ class PlaywrightBrowserAdapter:
         except Exception:
             # If navigation times out, we assume the page is at least partially loaded and proceed.
             pass
-            
+
         self._page.wait_for_timeout(1000)
         self._current_url = self._page.url
 
@@ -250,13 +250,13 @@ class PlaywrightBrowserAdapter:
                     };
                 }
                 """,
-                {"maxNodes": max_nodes}
+                {"maxNodes": max_nodes},
             )
-            
+
             # Parse the string elements back into dicts in Python
             parsed_elements = []
             raw_elements = result.get("elements", [])
-            
+
             for item in raw_elements:
                 parts = item.split("|")
                 # Handle cases where label/selector might have pipes or fewer parts
@@ -271,14 +271,16 @@ class PlaywrightBrowserAdapter:
                     else:
                         selector = rest
                         section = "main"
-                        
-                    parsed_elements.append({
-                        "role": role,
-                        "label": label,
-                        "selector": selector,
-                        "section": section
-                    })
-            
+
+                    parsed_elements.append(
+                        {
+                            "role": role,
+                            "label": label,
+                            "selector": selector,
+                            "section": section,
+                        }
+                    )
+
             result["elements"] = parsed_elements
             return result
 
@@ -288,7 +290,7 @@ class PlaywrightBrowserAdapter:
                 "fingerprint": "error",
                 "landmarks": [],
                 "elements": [],
-                "links": []
+                "links": [],
             }
 
     def capture_screenshot(self, scale: float = 0.4) -> str | None:
