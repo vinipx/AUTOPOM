@@ -282,7 +282,7 @@ class PlaywrightBrowserAdapter:
             result["elements"] = parsed_elements
             return result
 
-        except Exception as e:
+        except Exception:
             # Fallback empty result
             return {
                 "fingerprint": "error",
