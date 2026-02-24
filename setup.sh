@@ -113,6 +113,11 @@ bootstrap_python() {
   source "${VENV_DIR}/bin/activate"
   python -m pip install --upgrade pip setuptools wheel
   python -m pip install -e ".[ai,browser,dev]"
+
+  if command -v pre-commit >/dev/null 2>&1; then
+    echo "Installing pre-commit hooks..."
+    pre-commit install
+  fi
 }
 
 bootstrap_docs() {
@@ -156,7 +161,11 @@ Next steps:
   1) Activate environment:
      source "${VENV_DIR}/bin/activate"
 
-  2) Run tests:
+  2) Code Quality:
+     Pre-commit hooks are installed. They will run automatically on 'git commit'.
+     Run manually: pre-commit run --all-files
+
+  3) Run tests:
      PYTHONPATH=src python -m unittest discover -s tests -p "test_*_unittest.py" -v
 
   3) Run AutoPOM:
