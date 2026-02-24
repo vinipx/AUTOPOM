@@ -120,7 +120,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="AutoPOM-Agent CLI")
     parser.add_argument("--base-url", help="Base URL to crawl")
     parser.add_argument(
-        "-c", "--capture",
+        "-c",
+        "--capture",
         nargs="?",
         const="http://localhost:9222",
         help=(
@@ -178,15 +179,17 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
-    
+
     if not any([args.base_url, args.capture, args.chrome_profile, args.interactive]):
-        parser.error("At least one of --base-url, --capture/-c, --chrome-profile, or --interactive must be provided. Use --help for more info.")
+        parser.error(
+            "At least one of --base-url, --capture/-c, --chrome-profile, or --interactive must be provided. Use --help for more info."
+        )
 
     started_at = time.perf_counter()
-    
+
     cdp_url = args.capture
     browser_adapter_name = args.browser_adapter
-    
+
     if cdp_url or args.chrome_profile or args.interactive:
         browser_adapter_name = "playwright"
         initial_base_url = args.base_url if args.base_url else "http://detecting-url"
@@ -208,13 +211,17 @@ def main() -> None:
 
     try:
         if args.interactive:
-            print("\n" + "="*60)
+            print("\n" + "=" * 60)
             print(" INTERACTIVE CAPTURE MODE")
-            print("="*60)
+            print("=" * 60)
             print(" 1. A browser window has been launched.")
-            print(" 2. Navigate to your target page and perform any required steps (e.g., login).")
-            print(" 3. Once the page is ready to be mapped, return to this terminal and press ENTER.")
-            print("="*60 + "\n")
+            print(
+                " 2. Navigate to your target page and perform any required steps (e.g., login)."
+            )
+            print(
+                " 3. Once the page is ready to be mapped, return to this terminal and press ENTER."
+            )
+            print("=" * 60 + "\n")
             input("Press ENTER to capture the current page... ")
             print("Capturing...")
             actual_base_url = browser.url()
@@ -264,7 +271,7 @@ def main() -> None:
         result = orchestrator.run()
     finally:
         browser.close()
-    
+
     duration_seconds = time.perf_counter() - started_at
     summary_md_path, summary_json_path = _write_execution_summary(
         config=config,
