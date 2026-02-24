@@ -77,14 +77,18 @@ The project is designed for teams that need predictable POM generation, repeatab
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -e .
-```
-
-Optional dependency groups:
-
-```bash
 python -m pip install -e ".[ai,browser,dev]"
 ```
+
+### Setup Pre-commit Hooks (Recommended)
+
+To guarantee code quality and formatting before every commit/push:
+
+```bash
+pre-commit install
+```
+
+This will automatically run `ruff` and syntax checks on your changed files.
 
 ## Quick Start
 

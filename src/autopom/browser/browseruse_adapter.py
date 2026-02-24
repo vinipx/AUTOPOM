@@ -241,19 +241,19 @@ class PlaywrightBrowserAdapter:
                         [role="searchbox"], [role="spinbutton"], [role="slider"],
                         [contenteditable="true"], [tabindex]:not([tabindex="-1"])
                     `;
-                    
+
                     const formElements = Array.from(document.querySelectorAll(interactiveSelector))
                         .slice(0, 500)
                         .map(el => {
                             const tag = el.tagName.toLowerCase();
                             const roleAttr = el.getAttribute('role');
                             let role = roleAttr || 'generic';
-                            
+
                             // Refined role detection
                             if (tag === 'input' || tag === 'textarea' || tag === 'select') role = 'textbox';
                             if (tag === 'button') role = 'button';
                             if (el.getAttribute('contenteditable') === 'true') role = 'textbox';
-                            
+
                             // Label extraction hierarchy
                             let label = el.name || el.id || el.value || el.getAttribute('aria-label') || el.getAttribute('placeholder') || el.title;
                             if (role === 'button' || role === 'link' || role === 'menuitem' || !label) {
@@ -278,7 +278,7 @@ class PlaywrightBrowserAdapter:
                             else if (title) selector += `[title="${escapeSelector(title)}"]`;
                             else if ((role === 'button' || role === 'link' || role === 'menuitem') && label) selector += `:has-text("${escapeSelector(label)}")`;
                             else if (roleAttr) selector += `[role="${roleAttr}"]`;
-                            
+
                             // Class fallback
                             if (selector === tag && el.className && typeof el.className === 'string') {
                                 selector += `.${el.className.split(' ').filter(c => c).join('.')}`;
@@ -295,11 +295,11 @@ class PlaywrightBrowserAdapter:
                         .map(link => {
                             const href = link.href;
                             if (!href || href.startsWith('javascript:') || href.includes('#')) return null;
-                            
+
                             const text = cleanText(link.textContent);
                             const label = text.slice(0, 80) || 'link';
                             const selector = `a[href="${escapeSelector(href)}"]`;
-                            
+
                             const safeLabel = label.replace(/\\|/g, '');
                             return `link|${safeLabel}|${selector}|main`;
                         })
@@ -307,7 +307,7 @@ class PlaywrightBrowserAdapter:
 
                     // Combine: Interactive elements first, then Links
                     const allElements = formElements.concat(linkElements);
-                    
+
                     // Deduplicate strings directly
                     const uniqueElements = Array.from(new Set(allElements)).slice(0, maxNodes);
 

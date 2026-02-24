@@ -51,7 +51,7 @@ Launches a headed browser and pauses execution. This is the recommended way to h
 
 ### Existing Browser (`--capture` or `-c`)
 
-Attaches to a browser already running with the `--remote-debugging-port=9222` flag. 
+Attaches to a browser already running with the `--remote-debugging-port=9222` flag.
 - Usage: `--capture http://localhost:9222`
 - Default if no URL provided: `http://localhost:9222`
 

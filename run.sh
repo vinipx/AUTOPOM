@@ -290,7 +290,7 @@ main() {
   local chrome_profile="false"
   local interactive_pause="false"
   local base_url=""
-  
+
   if [[ "${skip_prompts}" == "true" ]]; then
     # Use CLI args directly
     if [[ -n "${arg_capture}" ]]; then
@@ -307,7 +307,7 @@ main() {
     echo "  2) Capture using Chrome Profile (Use local cookies/sessions. Note: Must close Chrome first!)"
     echo "  3) Interactive Mode (Launch headed browser, navigate manually, then press Enter to map)"
     echo "  4) Capture via CDP (Connect to browser started with --remote-debugging-port)"
-    
+
     local run_mode
     while true; do
       read -r -p "Select option (1-4, default -> 1): " run_mode
@@ -345,7 +345,7 @@ main() {
       else
           browser_adapter="mock"
       fi
-      
+
       headed_flag=""
       if [[ "${chrome_profile}" == "true" || "${interactive_pause}" == "true" ]]; then
           headed_flag="--headed"
@@ -354,19 +354,19 @@ main() {
       output_dir="$(prompt_default "Output directory" "output-live")"
       pom_language="$(choose_from_list "Choose POM output language:" 3 "java" "javascript" "typescript")"
       locator_storage="$(choose_from_list "Choose locator storage strategy:" 2 "inline" "external")"
-      
+
       if [[ "${capture_mode}" == "true" || "${chrome_profile}" == "true" || "${interactive_pause}" == "true" ]]; then
         browser_adapter="playwright"
         echo "Browser adapter automatically set to 'playwright'."
       else
         browser_adapter="$(choose_from_list "Choose browser adapter:" 2 "mock" "playwright")"
       fi
-      
+
       echo "Max crawl depth defines link traversal levels from the base URL."
       max_depth="$(prompt_positive_int "Max crawl depth" "2")"
       max_pages="$(prompt_positive_int "Max pages to model" "20")"
       headed_flag=""
-    
+
       if [[ "${browser_adapter}" == "playwright" ]]; then
         print_section "Playwright Runtime Setup"
         ensure_playwright_ready
@@ -407,7 +407,7 @@ main() {
     --max-depth "${max_depth}"
     --max-pages "${max_pages}"
   )
-  
+
   if [[ "${capture_mode}" == "true" ]]; then
     cmd+=("--capture" "${capture_url}")
   elif [[ "${chrome_profile}" == "true" ]]; then
@@ -417,7 +417,7 @@ main() {
   else
     cmd+=("--base-url" "${base_url}")
   fi
-  
+
   if [[ -n "${headed_flag}" ]]; then
     cmd+=("${headed_flag}")
   fi
