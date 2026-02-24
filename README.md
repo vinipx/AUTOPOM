@@ -20,15 +20,23 @@ The project is designed for teams that need predictable POM generation, repeatab
 
 ## Main Features
 
-- Autonomous crawl orchestration with depth, page, and domain controls.
-- Interactive element extraction and semantic page modeling.
-- Selector verification and fallback-based self-healing.
-- Multi-language Playwright POM generation (`java`, `javascript`, `typescript`).
-- Live crawl progress logs (`[CRAWL]`, `[MAP]`, `[SKIP]`) for runtime visibility.
-- Structured persistence (`JSON` models, language-specific code, crawl + execution summary reports).
-- CI-ready quality gates with Ruff formatting and lint checks.
+- **Interactive Run Wizard**: Guided prompt flow for easy configuration and setup.
+- **Interactive Capture Mode**: Manually navigate or authenticate in a live browser before mapping.
+- **Existing Browser Capture**: Attach to an already running browser instance via CDP.
+- **Chrome Profile Support**: Use your existing browser sessions, cookies, and saved passwords.
+- **Autonomous Crawl Orchestration**: Controlled depth, page limits, and domain boundaries.
+- **Semantic Page Modeling**: Extract interactive UI structure and infer meaningful element names.
+- **Multi-language POM Generation**: Standardized Playwright page objects in `java`, `javascript`, and `typescript`.
+- **Selector Self-healing**: Automatic verification and fallback promotion for resilient locators.
+- **Operational Visibility**: Live crawl logs and comprehensive managerial/technical reports.
 
 ## Core Capabilities
+
+### Interactive & Hybrid Workflows
+
+- **Headed Interaction**: Launch a visible browser, perform manual steps (like MFA or complex navigation), and capture when ready.
+- **Session Reuse**: Leverage existing Chrome profiles to skip authentication steps and crawl protected areas of your application.
+- **Targeted Mapping**: Attach to any open tab on a local or remote browser instance for surgical POM generation.
 
 ### Intelligent Crawl Orchestration
 
@@ -114,7 +122,7 @@ The crawl engine is configured through `CrawlConfig` (`src/autopom/config.py`).
 | Parameter | Default | Description |
 |---|---|---|
 | `base_url` | required | Root URL where crawling starts. |
-| `output_dir` | `output` | Output folder for models, Java artifacts, and reports. |
+| `output_dir` | `output` | Output folder for models, code artifacts, and reports. |
 | `max_depth` | `3` | Maximum link traversal depth from the base URL. |
 | `max_pages` | `80` | Maximum number of unique page models to generate. |
 | `max_actions_per_page` | `12` | Upper bound for inferred page actions. |
@@ -124,28 +132,45 @@ The crawl engine is configured through `CrawlConfig` (`src/autopom/config.py`).
 | `auth_user_env` | `AUTOPOM_USERNAME` | Environment variable name for username. |
 | `auth_pass_env` | `AUTOPOM_PASSWORD` | Environment variable name for password. |
 | `pom_language` | `java` | POM output language (`java`, `javascript`, `typescript`). |
+| `locator_storage` | `inline` | Selector storage strategy (`inline`, `external`). |
 | `browser_adapter` | `mock` | Browser runtime (`mock`, `playwright`). |
-| `playwright_headless` | `true` | Use headless browser when Playwright adapter is selected. |
+| `playwright_headless` | `true` | Use headless browser for Playwright. |
+| `cdp_url` | `None` | Connect to an existing browser via CDP URL. |
+| `chrome_profile` | `false` | Use the default local Chrome profile. |
 
 ## Output Structure
 
 After a run, outputs are created under the selected output directory:
 
 - `models_json/` - JSON page models and metadata per discovered page.
-- `<language>/` - Generated Playwright page objects and base page class (`java/`, `javascript/`, or `typescript/`).
+- `<language>/` - Generated Playwright page objects and base page class.
 - `reports/crawl_summary.md` - Crawl quality and selector confidence summary.
-- `reports/execution_summary.md` - Human-readable managerial summary (config + metrics + duration).
-- `reports/execution_summary.json` - Structured summary payload for dashboards/automation.
+- `reports/execution_summary.md` - Human-readable managerial summary.
+- `reports/execution_summary.json` - Structured summary payload for automation.
 
-## Runtime Visibility
+## Usage Examples
 
-Execution now includes live progress indicators:
+### Interactive Capture (Headed)
 
-- `[CRAWL]` - URL currently being visited, depth, queue, and modeled count.
-- `[MAP]` - page mapped with element/action counts.
-- `[SKIP]` - skipped URLs with reason (policy, duplicate, depth limit).
+Launch a browser, log in manually, and capture the page:
 
-### Language-specific examples
+```bash
+PYTHONPATH=src python3 -m autopom.cli.main --interactive --pom-language typescript
+```
+
+### Existing Browser (CDP)
+
+Capture from a browser already running with remote debugging enabled:
+
+```bash
+# First, launch Chrome with remote debugging
+# /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222
+
+# Then run AutoPOM
+PYTHONPATH=src python3 -m autopom.cli.main --capture http://localhost:9222
+```
+
+### Multi-language Generation
 
 ```bash
 # Java (default)

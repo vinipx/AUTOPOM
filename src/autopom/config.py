@@ -30,6 +30,9 @@ class CrawlConfig:
     locator_storage: str = "inline"
     browser_adapter: str = "mock"
     playwright_headless: bool = True
+    cdp_url: str | None = None
+    chrome_profile: bool = False
+    interactive_pause: bool = False
 
     def __post_init__(self) -> None:
         self.pom_language = normalize_pom_language(self.pom_language)

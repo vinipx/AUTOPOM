@@ -14,8 +14,12 @@ AutoPOM-Agent behavior is controlled by `CrawlConfig`.
 | `denied_domains` | External domains denylist | social domains |
 | `output_dir` | Output root for artifacts | `output` |
 | `pom_language` | Generated POM language (`java`, `javascript`, `typescript`) | `java` |
+| `locator_storage` | Selector storage strategy (`inline`, `external`) | `inline` |
 | `browser_adapter` | Browser backend (`mock`, `playwright`) | `mock` |
 | `playwright_headless` | Run Playwright headless (`true`) or headed (`false`) | `true` |
+| `cdp_url` | Connect to existing browser via CDP URL | `None` |
+| `chrome_profile` | Use local Chrome profile for sessions | `false` |
+| `interactive_pause` | Wait for user input before capturing | `false` |
 
 ## Credentials
 
@@ -35,10 +39,35 @@ PYTHONPATH=src python3 -m autopom.cli.main \
   --max-depth 3 \
   --max-pages 20 \
   --pom-language "javascript" \
-  --browser-adapter "mock"
+  --browser-adapter "playwright" \
+  --interactive
 ```
 
-## Guided execution
+## Advanced Browser Flags
+
+### Interactive Mode (`--interactive`)
+
+Launches a headed browser and pauses execution. This is the recommended way to handle complex authentication (MFA, Captchas) or to navigate to a specific application state before triggering the crawl.
+
+### Existing Browser (`--capture` or `-c`)
+
+Attaches to a browser already running with the `--remote-debugging-port=9222` flag. 
+- Usage: `--capture http://localhost:9222`
+- Default if no URL provided: `http://localhost:9222`
+
+### Chrome Profile (`--chrome-profile`)
+
+Launches a new instance using your default Google Chrome profile. This inherits all your active sessions, cookies, and stored credentials.
+**Note:** All existing Chrome windows must be closed before using this flag to avoid profile lock errors.
+
+## Generation Options
+
+### Locator Storage (`--locator-storage`)
+
+- `inline` (default): Locators are defined directly within the Page Object methods or fields.
+- `external`: Locators are stored in a separate metadata file (coming soon for all languages), allowing for easier updates without modifying code.
+
+## Language aliases
 
 Use `bash run.sh` for an interactive flow with enterprise-style prompts:
 

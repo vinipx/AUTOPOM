@@ -13,19 +13,12 @@ Key fields:
 - `denied_domains: list[str]`
 - `output_dir: Path`
 - `pom_language: str`
+- `locator_storage: str` (`inline` or `external`)
 - `browser_adapter: str`
 - `playwright_headless: bool`
-
-`pom_language` accepts:
-
-- `java`
-- `javascript` (alias: `js`)
-- `typescript` (alias: `ts`)
-
-`browser_adapter` accepts:
-
-- `mock`
-- `playwright` (alias: `pw`)
+- `cdp_url: str | None`
+- `chrome_profile: bool`
+- `interactive_pause: bool`
 
 ## `BrowserAdapter`
 
@@ -36,10 +29,17 @@ Methods:
 - `goto(url)`
 - `url()`
 - `title()`
-- `extract_interactive_dom_summary(max_nodes=120)`
+- `extract_interactive_dom_summary(max_nodes=500)`
 - `capture_screenshot(scale=0.4)`
 - `is_visible(selector, timeout_ms=1500)`
 - `close()`
+
+### `PlaywrightBrowserAdapter` specifics
+
+Supports advanced initialization:
+- `cdp_url`: Connects to a running browser instance.
+- `chrome_profile`: Launches with the default local Chrome profile.
+- Headless/Headed toggle.
 
 ## Progress hook events
 

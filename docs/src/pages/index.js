@@ -16,9 +16,9 @@ function HeroBanner() {
             AI spider for web discovery and multi-language Playwright Page Objects
           </p>
           <p className={styles.heroDescription}>
-            AutoPOM-Agent self-navigates your application, maps resilient selectors,
-            infers semantic element names, and synthesizes clean POM code (Java, JavaScript, or TypeScript) with
-            built-in selector verification, live crawl progress, and execution summary reporting.
+            AutoPOM-Agent self-navigates your application or attaches to your existing browser to map resilient selectors,
+            infer semantic element names, and synthesize clean POM code (Java, JavaScript, or TypeScript) with
+            built-in selector verification and session reuse.
           </p>
           <div className={styles.heroButtons}>
             <Link className={styles.heroPrimary} to="/docs/getting-started/quickstart">
@@ -38,9 +38,9 @@ const capabilityFeatures = [
   {
     badge: 'CRAWLER',
     color: '#2563eb',
-    title: 'Autonomous Navigation',
+    title: 'Autonomous & Hybrid Discovery',
     description:
-      'Explores pages with depth controls, route signatures, domain guardrails, and loop prevention for SPA-safe traversal.',
+      'Explores pages autonomously or attaches to existing browser sessions (CDP/Profiles) for manual/automated hybrid workflows.',
   },
   {
     badge: 'SEMANTIC',

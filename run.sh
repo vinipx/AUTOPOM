@@ -246,45 +246,160 @@ main() {
   info "Using Python environment: ${VENV_DIR}"
   install_base_dependencies_if_needed
 
-  local base_url output_dir pom_language locator_storage browser_adapter max_depth max_pages headed_flag
-  print_section "Run Configuration"
-  base_url="$(prompt_url "https://vinipx.github.io/AUTOPOM/")"
-  output_dir="$(prompt_default "Output directory" "output-live")"
-  pom_language="$(choose_from_list "Choose POM output language:" 3 "java" "javascript" "typescript")"
-  locator_storage="$(choose_from_list "Choose locator storage strategy:" 2 "inline" "external")"
-  browser_adapter="$(choose_from_list "Choose browser adapter:" 2 "mock" "playwright")"
-  echo "Max crawl depth defines link traversal levels from the base URL."
-  echo "Example: depth 1 = direct links only, depth 2 = links from those pages."
-  max_depth="$(prompt_positive_int "Max crawl depth" "2")"
-  echo "Max pages to model limits how many unique pages AUTOPOM persists per run."
-  max_pages="$(prompt_positive_int "Max pages to model" "20")"
-  headed_flag=""
+  local arg_capture=""
+  local arg_profile="false"
+  local arg_interactive="false"
+  local arg_base_url=""
+  local skip_prompts="false"
 
-  if [[ "${browser_adapter}" == "playwright" ]]; then
-    print_section "Playwright Runtime Setup"
-    ensure_playwright_ready
-    if prompt_yes_no "Run in headed mode (visible browser window)?" "n"; then
-      headed_flag="--headed"
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -c|--capture)
+        if [[ -n "${2:-}" && "$2" != -* ]]; then
+          arg_capture="$2"
+          shift 2
+        else
+          arg_capture="http://localhost:9222"
+          shift 1
+        fi
+        skip_prompts="true"
+        ;;
+      --chrome-profile)
+        arg_profile="true"
+        skip_prompts="true"
+        shift 1
+        ;;
+      --interactive)
+        arg_interactive="true"
+        skip_prompts="true"
+        shift 1
+        ;;
+      --base-url)
+        arg_base_url="$2"
+        skip_prompts="true"
+        shift 2
+        ;;
+      *)
+        shift 1
+        ;;
+    esac
+  done
+
+  local capture_mode="false"
+  local capture_url=""
+  local chrome_profile="false"
+  local interactive_pause="false"
+  local base_url=""
+  
+  if [[ "${skip_prompts}" == "true" ]]; then
+    # Use CLI args directly
+    if [[ -n "${arg_capture}" ]]; then
+        capture_mode="true"
+        capture_url="${arg_capture}"
+    fi
+    chrome_profile="${arg_profile}"
+    interactive_pause="${arg_interactive}"
+    base_url="${arg_base_url}"
+  else
+    print_section "Run Configuration"
+    echo "Choose how AUTOPOM should connect to a web page:"
+    echo "  1) Provide Base URL (Standard Mode)"
+    echo "  2) Capture using Chrome Profile (Use local cookies/sessions. Note: Must close Chrome first!)"
+    echo "  3) Interactive Mode (Launch headed browser, navigate manually, then press Enter to map)"
+    echo "  4) Capture via CDP (Connect to browser started with --remote-debugging-port)"
+    
+    local run_mode
+    while true; do
+      read -r -p "Select option (1-4, default -> 1): " run_mode
+      run_mode="${run_mode:-1}"
+      if [[ "${run_mode}" =~ ^[1-4]$ ]]; then
+        break
+      fi
+      warn "Invalid selection."
+    done
+
+    if [[ "${run_mode}" == "1" ]]; then
+      base_url="$(prompt_url "https://vinipx.github.io/AUTOPOM/")"
+    elif [[ "${run_mode}" == "2" ]]; then
+      chrome_profile="true"
+      info "Make sure to completely close all Chrome windows before continuing!"
+    elif [[ "${run_mode}" == "3" ]]; then
+      interactive_pause="true"
+    elif [[ "${run_mode}" == "4" ]]; then
+      capture_mode="true"
+      capture_url="$(prompt_default "CDP URL" "http://localhost:9222")"
     fi
   fi
 
+  local output_dir pom_language locator_storage browser_adapter max_depth max_pages headed_flag
+
+  if [[ "${skip_prompts}" == "true" ]]; then
+      # If skipping prompts via args, use defaults for the rest to make it a one-liner
+      output_dir="output-live"
+      pom_language="java"
+      locator_storage="inline"
+      max_depth="2"
+      max_pages="20"
+      if [[ "${capture_mode}" == "true" || "${chrome_profile}" == "true" || "${interactive_pause}" == "true" ]]; then
+          browser_adapter="playwright"
+      else
+          browser_adapter="mock"
+      fi
+      
+      headed_flag=""
+      if [[ "${chrome_profile}" == "true" || "${interactive_pause}" == "true" ]]; then
+          headed_flag="--headed"
+      fi
+  else
+      output_dir="$(prompt_default "Output directory" "output-live")"
+      pom_language="$(choose_from_list "Choose POM output language:" 3 "java" "javascript" "typescript")"
+      locator_storage="$(choose_from_list "Choose locator storage strategy:" 2 "inline" "external")"
+      
+      if [[ "${capture_mode}" == "true" || "${chrome_profile}" == "true" || "${interactive_pause}" == "true" ]]; then
+        browser_adapter="playwright"
+        echo "Browser adapter automatically set to 'playwright'."
+      else
+        browser_adapter="$(choose_from_list "Choose browser adapter:" 2 "mock" "playwright")"
+      fi
+      
+      echo "Max crawl depth defines link traversal levels from the base URL."
+      max_depth="$(prompt_positive_int "Max crawl depth" "2")"
+      max_pages="$(prompt_positive_int "Max pages to model" "20")"
+      headed_flag=""
+    
+      if [[ "${browser_adapter}" == "playwright" ]]; then
+        print_section "Playwright Runtime Setup"
+        ensure_playwright_ready
+        if [[ "${chrome_profile}" == "true" || "${interactive_pause}" == "true" ]]; then
+          echo "Running in headed mode (required for this capture mode)."
+          headed_flag="--headed"
+        else
+          if prompt_yes_no "Run in headed mode (visible browser window)?" "n"; then
+            headed_flag="--headed"
+          fi
+        fi
+      fi
+  fi
+
   print_section "Execution Preview"
-  echo "Base URL        : ${base_url}"
+  if [[ "${capture_mode}" == "true" ]]; then
+    echo "Mode            : CDP Capture (URL: ${capture_url})"
+  elif [[ "${chrome_profile}" == "true" ]]; then
+    echo "Mode            : Chrome Profile Capture"
+  elif [[ "${interactive_pause}" == "true" ]]; then
+    echo "Mode            : Interactive Capture"
+  else
+    echo "Base URL        : ${base_url}"
+  fi
   echo "Output Dir      : ${output_dir}"
   echo "POM Language    : ${pom_language}"
   echo "Locator Storage : ${locator_storage}"
   echo "Browser Adapter : ${browser_adapter}"
   echo "Max Depth       : ${max_depth}"
   echo "Max Pages       : ${max_pages}"
-  if [[ -n "${headed_flag}" ]]; then
-    echo "Headless Mode   : false"
-  else
-    echo "Headless Mode   : true"
-  fi
 
   local cmd=(
     python -m autopom.cli.main
-    --base-url "${base_url}"
     --output-dir "${output_dir}"
     --pom-language "${pom_language}"
     --locator-storage "${locator_storage}"
@@ -292,6 +407,17 @@ main() {
     --max-depth "${max_depth}"
     --max-pages "${max_pages}"
   )
+  
+  if [[ "${capture_mode}" == "true" ]]; then
+    cmd+=("--capture" "${capture_url}")
+  elif [[ "${chrome_profile}" == "true" ]]; then
+    cmd+=("--chrome-profile")
+  elif [[ "${interactive_pause}" == "true" ]]; then
+    cmd+=("--interactive")
+  else
+    cmd+=("--base-url" "${base_url}")
+  fi
+  
   if [[ -n "${headed_flag}" ]]; then
     cmd+=("${headed_flag}")
   fi
@@ -301,9 +427,11 @@ main() {
   echo "PYTHONPATH=src ${cmd[*]}"
   echo
 
-  if ! prompt_yes_no "Proceed with execution?" "y"; then
-    warn "Execution canceled by user."
-    exit 0
+  if [[ "${skip_prompts}" == "false" ]]; then
+      if ! prompt_yes_no "Proceed with execution?" "y"; then
+        warn "Execution canceled by user."
+        exit 0
+      fi
   fi
 
   echo

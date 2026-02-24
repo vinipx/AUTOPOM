@@ -17,11 +17,11 @@ flowchart TD
 
 ## Components
 
-- **Navigator:** Executes actions and discovers links.
-- **State Store:** Tracks visited signatures and graph edges.
-- **Semantic Analyzer:** Converts compact browser context to structured models.
-- **Self-Healing Verifier:** Tests and repairs selectors before persistence.
-- **POM Synthesizer:** Produces compile-ready Playwright page objects in Java, JavaScript, or TypeScript.
+- **Navigator:** Executes actions, discovers links, and supports hybrid manual/automated workflows via **Interactive Mode** and **CDP Attachment**.
+- **State Store:** Tracks visited signatures and graph edges to prevent duplicate modeling.
+- **Semantic Analyzer:** Converts compact browser context to structured models with ranked fallback selectors.
+- **Self-Healing Verifier:** Tests and repairs selectors against live DOM state before persistence.
+- **POM Synthesizer:** Produces compile-ready Playwright page objects with configurable **Locator Storage** strategies.
 
 ## Design principles
 

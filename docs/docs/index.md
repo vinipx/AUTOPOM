@@ -24,11 +24,12 @@ AutoPOM-Agent is an AI autonomous spider that crawls web applications and genera
 
 ## What's new
 
+- **Interactive Capture Mode**: Manually navigate/authenticate before mapping a page.
+- **Existing Browser Capture**: Attach to any running browser via CDP for surgical POM generation.
+- **Chrome Profile Support**: Reuse your existing browser sessions, cookies, and credentials.
+- **Locator Storage Strategy**: Choose between `inline` or `external` storage for generated locators.
 - Configurable `pom_language` with support for `java`, `javascript`, and `typescript`.
 - Configurable `browser_adapter` with `mock` and live `playwright` modes.
 - Language-specific output folders under `output/<language>/`.
 - Live progress logs during execution (`[CRAWL]`, `[MAP]`, `[SKIP]`).
-- Execution summary reports for managerial visibility:
-  - `reports/execution_summary.md`
-  - `reports/execution_summary.json`
-- Extended integration and unit tests validating language and adapter behavior.
+- Execution summary reports for managerial visibility.

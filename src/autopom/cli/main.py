@@ -118,7 +118,34 @@ def _write_execution_summary(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="AutoPOM-Agent CLI")
-    parser.add_argument("--base-url", required=True, help="Base URL to crawl")
+    parser.add_argument("--base-url", help="Base URL to crawl")
+    parser.add_argument(
+        "-c", "--capture",
+        nargs="?",
+        const="http://localhost:9222",
+        help=(
+            "Capture from an already opened browser. "
+            "Automatically detects the active tab's URL to generate locators and POMs. "
+            "Optionally provide a custom CDP URL (defaults to http://localhost:9222)."
+        ),
+    )
+    parser.add_argument(
+        "--chrome-profile",
+        action="store_true",
+        help=(
+            "Launch a new Playwright instance using your default Chrome profile (cookies, sessions). "
+            "WARNING: All existing Chrome windows must be completely closed first."
+        ),
+    )
+    parser.add_argument(
+        "--interactive",
+        action="store_true",
+        help=(
+            "Launch a headed Playwright browser and pause. "
+            "Allows you to manually authenticate or navigate to the target page, "
+            "then press Enter in the terminal to capture the active page."
+        ),
+    )
     parser.add_argument("--output-dir", default="output", help="Output directory")
     parser.add_argument("--max-depth", type=int, default=3, help="Max link depth")
     parser.add_argument("--max-pages", type=int, default=20, help="Max pages to model")
@@ -149,51 +176,95 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
-    args = build_parser().parse_args()
-    started_at = time.perf_counter()
-    config = CrawlConfig(
-        base_url=args.base_url,
-        output_dir=Path(args.output_dir),
-        max_depth=args.max_depth,
-        max_pages=args.max_pages,
-        pom_language=args.pom_language,
-        locator_storage=args.locator_storage,
-        browser_adapter=args.browser_adapter,
-        playwright_headless=not args.headed,
-    )
+    parser = build_parser()
+    args = parser.parse_args()
+    
+    if not any([args.base_url, args.capture, args.chrome_profile, args.interactive]):
+        parser.error("At least one of --base-url, --capture/-c, --chrome-profile, or --interactive must be provided. Use --help for more info.")
 
-    def progress_printer(event: str, payload: dict) -> None:
-        if event == "dequeue":
-            print(
-                "[CRAWL] Visiting "
-                f"{payload['url']} | depth={payload['depth']} "
-                f"| modeled={payload['modeled_pages']} "
-                f"| queue={payload['frontier_remaining']}"
-            )
-        elif event == "modeled":
-            print(
-                "[MAP] "
-                f"{payload['page_name']} "
-                f"| elements={payload['elements']} "
-                f"| actions={payload['actions']} "
-                f"| total_modeled={payload['modeled_pages']}"
-            )
-        elif event == "skip":
-            reason = payload.get("reason", "unknown")
-            print(f"[SKIP] {payload.get('url', '<unknown>')} | reason={reason}")
+    started_at = time.perf_counter()
+    
+    cdp_url = args.capture
+    browser_adapter_name = args.browser_adapter
+    
+    if cdp_url or args.chrome_profile or args.interactive:
+        browser_adapter_name = "playwright"
+        initial_base_url = args.base_url if args.base_url else "http://detecting-url"
+    else:
+        initial_base_url = args.base_url
+
+    # Force headed mode if interactive is used, so the user can actually see the browser
+    is_headless = not args.headed
+    if args.interactive:
+        is_headless = False
 
     browser = create_browser_adapter(
-        adapter_name=config.browser_adapter,
-        base_url=args.base_url,
-        playwright_headless=config.playwright_headless,
+        adapter_name=browser_adapter_name,
+        base_url=initial_base_url,
+        playwright_headless=is_headless,
+        cdp_url=cdp_url,
+        chrome_profile=args.chrome_profile,
     )
+
     try:
+        if args.interactive:
+            print("\n" + "="*60)
+            print(" INTERACTIVE CAPTURE MODE")
+            print("="*60)
+            print(" 1. A browser window has been launched.")
+            print(" 2. Navigate to your target page and perform any required steps (e.g., login).")
+            print(" 3. Once the page is ready to be mapped, return to this terminal and press ENTER.")
+            print("="*60 + "\n")
+            input("Press ENTER to capture the current page... ")
+            print("Capturing...")
+            actual_base_url = browser.url()
+        elif (cdp_url or args.chrome_profile) and not args.base_url:
+            actual_base_url = browser.url()
+            print(f"Detected Base URL from browser: {actual_base_url}")
+        else:
+            actual_base_url = initial_base_url
+
+        config = CrawlConfig(
+            base_url=actual_base_url,
+            output_dir=Path(args.output_dir),
+            max_depth=args.max_depth,
+            max_pages=args.max_pages,
+            pom_language=args.pom_language,
+            locator_storage=args.locator_storage,
+            browser_adapter=browser_adapter_name,
+            playwright_headless=is_headless,
+            cdp_url=cdp_url,
+            chrome_profile=args.chrome_profile,
+            interactive_pause=args.interactive,
+        )
+
+        def progress_printer(event: str, payload: dict) -> None:
+            if event == "dequeue":
+                print(
+                    "[CRAWL] Visiting "
+                    f"{payload['url']} | depth={payload['depth']} "
+                    f"| modeled={payload['modeled_pages']} "
+                    f"| queue={payload['frontier_remaining']}"
+                )
+            elif event == "modeled":
+                print(
+                    "[MAP] "
+                    f"{payload['page_name']} "
+                    f"| elements={payload['elements']} "
+                    f"| actions={payload['actions']} "
+                    f"| total_modeled={payload['modeled_pages']}"
+                )
+            elif event == "skip":
+                reason = payload.get("reason", "unknown")
+                print(f"[SKIP] {payload.get('url', '<unknown>')} | reason={reason}")
+
         orchestrator = AutoPomOrchestrator(
             config=config, browser=browser, progress_hook=progress_printer
         )
         result = orchestrator.run()
     finally:
         browser.close()
+    
     duration_seconds = time.perf_counter() - started_at
     summary_md_path, summary_json_path = _write_execution_summary(
         config=config,

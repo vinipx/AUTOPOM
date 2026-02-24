@@ -20,6 +20,13 @@ Code generation is model-driven and language-configurable. AUTOPOM generates out
 | JavaScript | `javascript` | `.js` | `output/javascript` |
 | TypeScript | `typescript` | `.ts` | `output/typescript` |
 
+## Locator Storage Strategy
+
+You can control how selectors are stored in the generated code using the `locator_storage` parameter:
+
+- **`inline`**: Selectors are embedded directly in the class fields or methods. This is standard for most Playwright implementations.
+- **`external`**: Selectors are stored in a sidecar metadata file, keeping the Page Object class focused purely on interaction logic.
+
 ## Selection strategy
 
 - Set `--pom-language` in CLI or `pom_language` in `CrawlConfig`.

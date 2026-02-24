@@ -92,12 +92,26 @@ class MockBrowserUseAdapter:
         return None
 
 
+import os
+import platform
+
+def get_chrome_profile_path() -> str:
+    system = platform.system()
+    if system == "Darwin":
+        return os.path.expanduser("~/Library/Application Support/Google/Chrome")
+    elif system == "Windows":
+        return os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\User Data")
+    else: # Linux
+        return os.path.expanduser("~/.config/google-chrome")
+
 @dataclass(slots=True)
 class PlaywrightBrowserAdapter:
     """Live browser adapter backed by Playwright (sync API)."""
 
     base_url: str
     headless: bool = True
+    cdp_url: str | None = None
+    chrome_profile: bool = False
     navigation_timeout_ms: int = 15000
     _sync_playwright: object = field(init=False, repr=False)
     _playwright: object = field(init=False, repr=False)
@@ -118,17 +132,71 @@ class PlaywrightBrowserAdapter:
 
         self._sync_playwright = sync_playwright
         self._playwright = self._sync_playwright().start()
-        self._browser = self._playwright.chromium.launch(headless=self.headless)
-        self._context = self._browser.new_context(
-            user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-            viewport={"width": 1280, "height": 720},
-            locale="en-US",
-        )
-        self._page = self._context.new_page()
+
+        if self.cdp_url:
+            print(f"Connecting to existing browser at {self.cdp_url}...")
+            self._browser = self._playwright.chromium.connect_over_cdp(self.cdp_url)
+            # Use existing context if available, else create new
+            if self._browser.contexts:
+                self._context = self._browser.contexts[0]
+            else:
+                self._context = self._browser.new_context()
+            
+            # Use existing page if available
+            if self._context.pages:
+                self._page = self._context.pages[-1]
+                self._page.bring_to_front()
+            else:
+                self._page = self._context.new_page()
+            
+            self._current_url = self._page.url
+            if not self._current_url or self._current_url == "about:blank":
+                 self._current_url = self.base_url
+
+        elif self.chrome_profile:
+            profile_path = get_chrome_profile_path()
+            print(f"Launching with local Chrome profile at {profile_path}...")
+            try:
+                self._context = self._playwright.chromium.launch_persistent_context(
+                    user_data_dir=profile_path,
+                    headless=self.headless,
+                    # Usually we want a non-headless browser to debug if we use profile
+                    channel="chrome", # requires actual Chrome installed
+                )
+                self._browser = self._context.browser # might be None in persistent context
+                if self._context.pages:
+                    self._page = self._context.pages[-1]
+                    self._page.bring_to_front()
+                else:
+                    self._page = self._context.new_page()
+                    
+                self._current_url = self._page.url
+                if not self._current_url or self._current_url == "about:blank":
+                     self._current_url = self.base_url
+            except Exception as e:
+                if "locked" in str(e).lower() or "singletonlock" in str(e).lower():
+                    raise RuntimeError("Chrome profile is locked. Please completely close all existing Google Chrome windows (you can run `killall \"Google Chrome\"` in your terminal) before running with the Chrome Profile option.") from e
+                raise e
+        else:
+            self._browser = self._playwright.chromium.launch(headless=self.headless)
+            self._context = self._browser.new_context(
+                user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+                viewport={"width": 1280, "height": 720},
+                locale="en-US",
+            )
+            self._page = self._context.new_page()
+            self._current_url = self.base_url
+
         self._page.set_default_timeout(self.navigation_timeout_ms)
-        self._current_url = self.base_url
 
     def goto(self, url: str) -> None:
+        if self.cdp_url:
+            # If connected to existing browser, we might not want to navigate if we're already there.
+            # But the orchestrator might call goto.
+            # If the URL is the same, just reload or do nothing?
+            # For now, we follow standard behavior.
+            pass
+        
         try:
             self._page.goto(
                 url, wait_until="domcontentloaded", timeout=self.navigation_timeout_ms
@@ -141,7 +209,10 @@ class PlaywrightBrowserAdapter:
         self._current_url = self._page.url
 
     def url(self) -> str:
-        return self._page.url or self._current_url or self.base_url
+        page_url = self._page.url
+        if not page_url or page_url == "about:blank":
+            return self._current_url or self.base_url
+        return page_url
 
     def title(self) -> str:
         return self._page.title()
@@ -317,12 +388,18 @@ class PlaywrightBrowserAdapter:
 
 
 def create_browser_adapter(
-    adapter_name: str, base_url: str, playwright_headless: bool = True
+    adapter_name: str,
+    base_url: str,
+    playwright_headless: bool = True,
+    cdp_url: str | None = None,
+    chrome_profile: bool = False,
 ) -> BrowserAdapter:
     normalized = normalize_browser_adapter(adapter_name)
     if normalized == "playwright":
         return PlaywrightBrowserAdapter(
             base_url=base_url,
             headless=playwright_headless,
+            cdp_url=cdp_url,
+            chrome_profile=chrome_profile,
         )
     return MockBrowserUseAdapter(base_url=base_url)
